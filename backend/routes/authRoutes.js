@@ -143,22 +143,6 @@ router.put("/change-password", protect, async (req, res) => {
             message: "Password changed successfully",
         });
 
-        // Temporary response
-        res.status(200).json({
-            success: true,
-            message: "Current password verified successfully",
-        });
-
-        // Temporary response to verify that the user was found
-        res.status(200).json({
-            success: true,
-            message: "User found successfully",
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-            },
-        });
     }
     catch (error) {
         res.status(500).json({
