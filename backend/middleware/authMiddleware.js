@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 // Middleware to protect private routes
 const protect = async (req, res, next) => {
     try {
-
+        
         // Read Authorization header
         // Example:
         // Authorization: Bearer eyJhbGciOiJIUzI1Ni...
