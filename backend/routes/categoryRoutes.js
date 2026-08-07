@@ -61,6 +61,26 @@ router.post("/", protect, async (req, res) => {
 });
 
 
+router.get("/", protect, async (req, res) => {
+    try {
+        const categories = await Category.find({
+            user: req.userId,
+            isDeleted: false,
+        }).sort({ name: 1 });
+        return res.status(200).json({
+            success: true,
+            categories,
+        });
+
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+});
+
 
 export default router;
 

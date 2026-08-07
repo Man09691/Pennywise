@@ -3,6 +3,8 @@ import bycrt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import protect from "../middleware/authMiddleware.js";
+import Category from "../models/Category.js";
+import defaultCategories from "../utils/defaultCategories.js";
 
 const router = express.Router();
 
@@ -22,6 +24,15 @@ router.post("/signup", async (req, res) => {
         const passwordHash = await bycrt.hash(password, 10);
 
         const user = await User.create({ name, email, passwordHash });
+
+        const categories = defaultCategories.map(category => ({
+            user: user._id,
+            name: category.name,
+            type: category.type,
+            isDefault: true,
+        }));
+
+        await Category.insertMany(categories);
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
             expiresIn: "7d",
