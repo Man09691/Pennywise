@@ -1,0 +1,52 @@
+:root {
+    /* Colors */
+    --color-primary: #6C63FF;
+    --color-primary-dark: #5148D8;
+
+    --color-background: #F6F7FB;
+    --color-surface: #FFFFFF;
+
+    --color-text: #111827;
+    --color-text-secondary: #6B7280;
+
+    --color-success: #10B981;
+    --color-danger: #EF4444;
+    --color-warning: #F59E0B;
+
+    /* Borders */
+    --color-border: #E5E7EB;
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
+
+    /* Typography */
+    --font-family: Inter, system-ui, sans-serif;
+}
+
+/* Reset */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    min-height: 100%;
+}
+
+body {
+    font-family: var(--font-family);
+    background: var(--color-background);
+    color: var(--color-text);
+}
