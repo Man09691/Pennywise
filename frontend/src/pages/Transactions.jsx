@@ -1,15 +1,25 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { apiRequest } from "../services/api";
+import { Pencil, Trash2 } from "lucide-react";
 
 function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   const [categories, setCategories] = useState([]);
 
   const [showCategoryForm, setShowCategoryForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -21,7 +31,10 @@ function Transactions() {
     note: "",
   });
 
+  // --------------------------------------------------
   // Load all transactions
+  // --------------------------------------------------
+
   async function loadTransactions() {
     try {
       setLoading(true);
@@ -37,7 +50,10 @@ function Transactions() {
     }
   }
 
+  // --------------------------------------------------
   // Load all categories
+  // --------------------------------------------------
+
   async function loadCategories() {
     try {
       const data = await apiRequest("/categories");
@@ -48,13 +64,22 @@ function Transactions() {
     }
   }
 
+  // --------------------------------------------------
   // Load transactions and categories when page opens
+  // --------------------------------------------------
+
   useEffect(() => {
-    loadTransactions();
-    loadCategories();
+    async function loadData() {
+      await Promise.all([loadTransactions(), loadCategories()]);
+    }
+
+    loadData();
   }, []);
 
+  // --------------------------------------------------
   // Handle normal form field changes
+  // --------------------------------------------------
+
   function handleChange(event) {
     const { name, value } = event.target;
 
@@ -64,7 +89,92 @@ function Transactions() {
     });
   }
 
+  // --------------------------------------------------
+  // Open transaction for editing
+  // --------------------------------------------------
+
+  function handleEditTransaction(transaction) {
+    setError("");
+
+    setEditingTransaction(transaction);
+
+    setFormData({
+      title: transaction.title,
+      amount: transaction.amount,
+      type: transaction.type,
+      category: transaction.category._id,
+      paymentMethod: transaction.paymentMethod,
+      date: transaction.date
+        ? new Date(transaction.date).toISOString().split("T")[0]
+        : "",
+      note: transaction.note || "",
+    });
+
+    setShowCategoryForm(false);
+    setNewCategoryName("");
+
+    setShowForm(true);
+  }
+
+  // --------------------------------------------------
+  // Automatically open edit form from Dashboard
+  // --------------------------------------------------
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+
+    if (!editId || transactions.length === 0) {
+      return;
+    }
+
+    const transaction = transactions.find((item) => item._id === editId);
+
+    if (transaction) {
+      handleEditTransaction(transaction);
+
+      // Remove ?edit=... from URL
+      setSearchParams({});
+    }
+  }, [transactions, searchParams, setSearchParams]);
+
+  // --------------------------------------------------
+  // Delete transaction
+  // --------------------------------------------------
+
+  function handleDeleteTransaction(transaction) {
+    setError("");
+    setTransactionToDelete(transaction);
+    setShowDeleteModal(true);
+  }
+
+  async function confirmDeleteTransaction() {
+    if (!transactionToDelete || deleting) {
+      return;
+    }
+
+    setDeleting(true);
+    setError("");
+
+    try {
+      await apiRequest(`/transactions/${transactionToDelete._id}`, {
+        method: "DELETE",
+      });
+
+      await loadTransactions();
+
+      setShowDeleteModal(false);
+      setTransactionToDelete(null);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  // --------------------------------------------------
   // Add a new custom category
+  // --------------------------------------------------
+
   async function handleAddCategory() {
     setError("");
 
@@ -85,7 +195,7 @@ function Transactions() {
       // Reload categories
       await loadCategories();
 
-      // Automatically select the newly created category
+      // Automatically select newly created category
       setFormData({
         ...formData,
         category: data.category._id,
@@ -101,9 +211,16 @@ function Transactions() {
     }
   }
 
-  // Submit new transaction
+  // --------------------------------------------------
+  // Submit transaction
+  // --------------------------------------------------
+
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (submitting) {
+      return;
+    }
 
     setError("");
 
@@ -118,6 +235,8 @@ function Transactions() {
       return;
     }
 
+    setSubmitting(true);
+
     try {
       const transactionData = {
         title: formData.title.trim(),
@@ -129,16 +248,30 @@ function Transactions() {
         note: formData.note.trim() || undefined,
       };
 
-      await apiRequest("/transactions", {
-        method: "POST",
-        body: JSON.stringify(transactionData),
-      });
+      // Edit existing transaction
+      if (editingTransaction) {
+        await apiRequest(`/transactions/${editingTransaction._id}`, {
+          method: "PUT",
+          body: JSON.stringify(transactionData),
+        });
+      }
 
-      // Refresh transaction list
+      // Add new transaction
+      else {
+        await apiRequest("/transactions", {
+          method: "POST",
+          body: JSON.stringify(transactionData),
+        });
+      }
+
+      // Refresh transactions
       await loadTransactions();
 
       // Close modal
       setShowForm(false);
+
+      // Clear editing transaction
+      setEditingTransaction(null);
 
       // Reset transaction form
       setFormData({
@@ -151,37 +284,82 @@ function Transactions() {
         note: "",
       });
 
-      // Reset category form as well
+      // Reset category form
       setShowCategoryForm(false);
       setNewCategoryName("");
     } catch (error) {
       setError(error.message);
+    } finally {
+      setSubmitting(false);
     }
   }
 
+  // --------------------------------------------------
   // Categories matching selected transaction type
+  // --------------------------------------------------
+
   const filteredCategories = categories.filter(
-    (category) => category.type === formData.type
+    (category) => category.type === formData.type,
   );
+
+  // --------------------------------------------------
+  // Loading
+  // --------------------------------------------------
 
   if (loading) {
     return <h1>Loading transactions...</h1>;
   }
 
+  // --------------------------------------------------
+  // Error
+  // --------------------------------------------------
+
   if (error && !showForm) {
     return <h1>{error}</h1>;
   }
 
+  // --------------------------------------------------
+  // UI
+  // --------------------------------------------------
+
   return (
     <div className="transactions-page">
+      {/* Header */}
+
       <div className="transactions-header">
         <h1>Transactions</h1>
+
         <p>Manage your income and expenses.</p>
       </div>
 
-      <button type="button" onClick={() => setShowForm(true)}>
+      {/* Add Transaction Button */}
+
+      <button
+        type="button"
+        onClick={() => {
+          setEditingTransaction(null);
+
+          setFormData({
+            title: "",
+            amount: "",
+            type: "expense",
+            category: "",
+            paymentMethod: "",
+            date: "",
+            note: "",
+          });
+
+          setShowCategoryForm(false);
+          setNewCategoryName("");
+          setError("");
+
+          setShowForm(true);
+        }}
+      >
         + Add Transaction
       </button>
+
+      {/* Transaction List */}
 
       <div className="transactions-list">
         {transactions.map((transaction) => (
@@ -196,36 +374,72 @@ function Transactions() {
               </p>
             </div>
 
-            <strong>
-              {transaction.type === "income" ? "+" : "-"}₹
-              {transaction.amount}
-            </strong>
+            <div>
+              <strong>
+                {transaction.type === "income" ? "+" : "-"}₹{transaction.amount}
+              </strong>
+
+              {/* Edit */}
+
+              <button
+                type="button"
+                title="Edit transaction"
+                onClick={() => handleEditTransaction(transaction)}
+              >
+                <Pencil size={18} />
+              </button>
+
+              {/* Delete */}
+
+              <button
+                type="button"
+                title="Delete transaction"
+                onClick={() => handleDeleteTransaction(transaction)}
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
+      {/* Add / Edit Transaction Modal */}
+
       {showForm && (
         <div className="transaction-form">
           <div className="transaction-form-card">
+            {/* Close */}
+
             <button
               type="button"
               className="modal-close"
               onClick={() => {
                 setShowForm(false);
+                setEditingTransaction(null);
                 setError("");
                 setShowCategoryForm(false);
                 setNewCategoryName("");
+
+                // Remove edit parameter if present
+                setSearchParams({});
               }}
             >
               ×
             </button>
 
-            <h2>Add Transaction</h2>
+            {/* Form title */}
+
+            <h2>
+              {editingTransaction ? "Edit Transaction" : "Add Transaction"}
+            </h2>
+
+            {/* Error */}
 
             {error && <p className="form-error">{error}</p>}
 
             <form onSubmit={handleSubmit}>
               {/* Title */}
+
               <div className="form-group">
                 <label>Title</label>
 
@@ -239,6 +453,7 @@ function Transactions() {
               </div>
 
               {/* Amount */}
+
               <div className="form-group">
                 <label>Amount</label>
 
@@ -254,6 +469,7 @@ function Transactions() {
               </div>
 
               {/* Type */}
+
               <div className="form-group">
                 <label>Type</label>
 
@@ -267,17 +483,18 @@ function Transactions() {
                       category: "",
                     });
 
-                    // Hide category creation form if type changes
                     setShowCategoryForm(false);
                     setNewCategoryName("");
                   }}
                 >
                   <option value="expense">Expense</option>
+
                   <option value="income">Income</option>
                 </select>
               </div>
 
               {/* Category */}
+
               <div className="form-group">
                 <label>Category</label>
 
@@ -314,12 +531,11 @@ function Transactions() {
                     </option>
                   ))}
 
-                  <option value="other">
-                    Other → Add new category
-                  </option>
+                  <option value="other">Other → Add new category</option>
                 </select>
 
-                {/* Add New Category Form */}
+                {/* Add New Category */}
+
                 {showCategoryForm && (
                   <div className="add-category-form">
                     <label>New Category</label>
@@ -334,10 +550,7 @@ function Transactions() {
                     />
 
                     <div>
-                      <button
-                        type="button"
-                        onClick={handleAddCategory}
-                      >
+                      <button type="button" onClick={handleAddCategory}>
                         Add Category
                       </button>
 
@@ -357,6 +570,7 @@ function Transactions() {
               </div>
 
               {/* Payment Method */}
+
               <div className="form-group">
                 <label>Payment Method</label>
 
@@ -366,16 +580,21 @@ function Transactions() {
                   onChange={handleChange}
                 >
                   <option value="">Select payment method</option>
-                  <option value="Cash">Cash</option>
+
+                  <option value="Debit Card">Debit Card</option>
+
+                  <option value="Credit Card">Credit Card</option>
+
                   <option value="UPI">UPI</option>
+
                   <option value="Card">Card</option>
-                  <option value="Bank Transfer">
-                    Bank Transfer
-                  </option>
+
+                  <option value="Bank Transfer">Bank Transfer</option>
                 </select>
               </div>
 
               {/* Date */}
+
               <div className="form-group">
                 <label>Date</label>
 
@@ -388,6 +607,7 @@ function Transactions() {
               </div>
 
               {/* Note */}
+
               <div className="form-group">
                 <label>Note</label>
 
@@ -400,24 +620,77 @@ function Transactions() {
               </div>
 
               {/* Buttons */}
+
               <div>
                 <button
                   type="button"
                   onClick={() => {
                     setShowForm(false);
+                    setEditingTransaction(null);
                     setError("");
                     setShowCategoryForm(false);
                     setNewCategoryName("");
+                    setSearchParams({});
                   }}
                 >
                   Cancel
                 </button>
 
-                <button type="submit">
-                  Add Transaction
+                <button type="submit" disabled={submitting}>
+                  {submitting
+                    ? editingTransaction
+                      ? "Updating..."
+                      : "Adding..."
+                    : editingTransaction
+                      ? "Update Transaction"
+                      : "Add Transaction"}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && transactionToDelete && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <div className="delete-modal-icon">
+              <Trash2 size={24} />
+            </div>
+
+            <h2>Delete Transaction?</h2>
+
+            <p>
+              Are you sure you want to delete{" "}
+              <strong>"{transactionToDelete.title}"</strong>?
+            </p>
+
+            <p className="delete-modal-warning">
+              This transaction will be removed from your transaction list.
+            </p>
+
+            <div className="delete-modal-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setTransactionToDelete(null);
+                  setError("");
+                }}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="delete-confirm-button"
+                onClick={confirmDeleteTransaction}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
           </div>
         </div>
       )}

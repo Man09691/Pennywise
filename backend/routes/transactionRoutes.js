@@ -5,6 +5,11 @@ import Category from "../models/Category.js";
 
 const router = express.Router();
 
+
+// ======================================================
+// CREATE TRANSACTION
+// POST /api/transactions
+// ======================================================
 router.post("/", protect, async (req, res) => {
     try {
         const {
@@ -17,7 +22,7 @@ router.post("/", protect, async (req, res) => {
             note,
         } = req.body;
 
-
+        // Required fields
         if (
             !title ||
             !amount ||
@@ -31,49 +36,65 @@ router.post("/", protect, async (req, res) => {
             });
         }
 
+        // Find category:
+        // 1. Shared default category
+        // OR
+        // 2. Category owned by logged-in user
         const selectedCategory = await Category.findOne({
             _id: category,
-            user: req.userId,
             isDeleted: false,
+            $or: [
+                { isDefault: true },
+                { user: req.userId },
+            ],
         });
+
         if (!selectedCategory) {
             return res.status(404).json({
                 success: false,
                 message: "Category not found",
             });
         }
+
+        // Category type must match transaction type
         if (selectedCategory.type !== type) {
             return res.status(400).json({
                 success: false,
                 message: "Category type does not match transaction type",
             });
         }
-        // Create a new transaction
+
+        // Create transaction
         const transaction = await Transaction.create({
             user: req.userId,
-            category,
+            category: category,
             title: title.trim(),
-            amount,
+            amount: Number(amount),
             type,
             paymentMethod,
             date,
             note: note ? note.trim() : "",
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             success: true,
             message: "Transaction created successfully",
             transaction,
         });
-    }
-    catch (error) {
-        res.status(500).json({
+
+    } catch (error) {
+        return res.status(500).json({
             success: false,
             message: error.message,
         });
     }
 });
 
+
+// ======================================================
+// GET TRANSACTIONS
+// GET /api/transactions
+// ======================================================
 router.get("/", protect, async (req, res) => {
     try {
         const transactions = await Transaction.find({
@@ -83,19 +104,24 @@ router.get("/", protect, async (req, res) => {
             .populate("category", "name type")
             .sort({ date: -1 });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             transactions,
         });
-    }
-    catch (error) {
-        res.status(500).json({
+
+    } catch (error) {
+        return res.status(500).json({
             success: false,
             message: error.message,
         });
     }
 });
 
+
+// ======================================================
+// UPDATE TRANSACTION
+// PUT /api/transactions/:id
+// ======================================================
 router.put("/:id", protect, async (req, res) => {
     try {
         const transaction = await Transaction.findOne({
@@ -121,17 +147,25 @@ router.put("/:id", protect, async (req, res) => {
             note,
         } = req.body;
 
+        // Find category:
+        // Default category OR user's own category
         const selectedCategory = await Category.findOne({
             _id: category,
-            user: req.userId,
             isDeleted: false,
+            $or: [
+                { isDefault: true },
+                { user: req.userId },
+            ],
         });
+
         if (!selectedCategory) {
             return res.status(404).json({
                 success: false,
                 message: "Category not found",
             });
         }
+
+        // Category type must match transaction type
         if (selectedCategory.type !== type) {
             return res.status(400).json({
                 success: false,
@@ -140,13 +174,12 @@ router.put("/:id", protect, async (req, res) => {
         }
 
         transaction.title = title.trim();
-        transaction.amount = amount;
+        transaction.amount = Number(amount);
         transaction.type = type;
         transaction.category = category;
         transaction.paymentMethod = paymentMethod;
         transaction.date = date || transaction.date;
         transaction.note = note ? note.trim() : "";
-
 
         await transaction.save();
 
@@ -157,7 +190,6 @@ router.put("/:id", protect, async (req, res) => {
         });
 
     } catch (error) {
-
         return res.status(500).json({
             success: false,
             message: error.message,
@@ -165,8 +197,14 @@ router.put("/:id", protect, async (req, res) => {
     }
 });
 
+
+// ======================================================
+// DELETE TRANSACTION - SOFT DELETE
+// DELETE /api/transactions/:id
+// ======================================================
 router.delete("/:id", protect, async (req, res) => {
     try {
+        // Find transaction belonging to logged-in user
         const transaction = await Transaction.findOne({
             _id: req.params.id,
             user: req.userId,
@@ -180,6 +218,7 @@ router.delete("/:id", protect, async (req, res) => {
             });
         }
 
+        // Soft delete
         transaction.isDeleted = true;
         transaction.deletedAt = new Date();
 
@@ -197,5 +236,6 @@ router.delete("/:id", protect, async (req, res) => {
         });
     }
 });
+
 
 export default router;

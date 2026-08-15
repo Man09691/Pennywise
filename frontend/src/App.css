@@ -414,3 +414,535 @@
         transform: translateY(0) scale(1);
     }
 }
+/* ==================================================
+   DELETE CONFIRMATION MODAL
+   ================================================== */
+
+.delete-modal {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(17, 24, 39, 0.35);
+
+    backdrop-filter: blur(8px);
+
+    z-index: 2000;
+
+    animation: modalAppear 0.25s ease;
+}
+
+
+.delete-modal-card {
+    position: relative;
+
+    width: 100%;
+    max-width: 420px;
+
+    padding: 32px;
+
+    background: var(--color-surface);
+
+    border: 1px solid var(--color-border);
+
+    border-radius: var(--radius-xl);
+
+    box-shadow: var(--shadow-lg);
+}
+
+
+.delete-modal-card h2 {
+    margin: 0 0 20px;
+
+    color: var(--color-text);
+
+    font-size: 24px;
+    font-weight: 700;
+}
+
+
+.delete-modal-card p {
+    margin: 0 0 12px;
+
+    color: var(--color-text-secondary);
+
+    font-size: 15px;
+
+    line-height: 1.5;
+}
+
+
+.delete-modal-card p strong {
+    color: var(--color-text);
+}
+
+
+.delete-modal-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    margin-top: 28px;
+}
+
+
+.delete-modal-actions button {
+    padding: 10px 18px;
+
+    border: none;
+
+    border-radius: var(--radius-md);
+
+    font-family: inherit;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+.delete-modal-actions button:first-child {
+    background: #f3f4f6;
+
+    color: var(--color-text);
+}
+
+
+.delete-modal-actions button:first-child:hover {
+    background: #e5e7eb;
+}
+
+
+.delete-modal-actions button:last-child {
+    background: var(--color-danger);
+
+    color: white;
+}
+
+
+.delete-modal-actions button:last-child:hover {
+    transform: translateY(-1px);
+
+    opacity: 0.9;
+}
+
+
+.delete-modal-actions button:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+/* =========================================
+   AUTH PAGE
+   ========================================= */
+
+.auth-page {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background: #f3f4f6;
+}
+
+
+/* =========================================
+   AUTH CONTAINER
+   ========================================= */
+
+.auth-container {
+    position: relative;
+
+    width: 100%;
+    max-width: 900px;
+    min-height: 560px;
+
+    display: flex;
+
+    overflow: hidden;
+
+    background: white;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.15);
+
+    border: 1px solid #e5e7eb;
+}
+
+
+/* =========================================
+   FORM PANELS
+   ========================================= */
+
+.auth-form-panel {
+    position: absolute;
+
+    top: 0;
+
+    width: 50%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+
+    background: white;
+
+    transition:
+        transform 0.6s ease,
+        opacity 0.6s ease;
+}
+
+
+.login-panel {
+    left: 0;
+
+    z-index: 2;
+}
+
+
+.signup-panel {
+    right: 0;
+
+    z-index: 1;
+}
+
+
+/* =========================================
+   FORM CONTENT
+   ========================================= */
+
+.auth-form-content {
+    width: 100%;
+    max-width: 330px;
+
+    text-align: center;
+}
+
+
+.auth-form-content h1 {
+    margin-bottom: 10px;
+
+    font-size: 32px;
+    font-weight: 700;
+
+    color: #111827;
+}
+
+
+.auth-subtitle {
+    margin-bottom: 28px;
+
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+
+/* =========================================
+   INPUTS
+   ========================================= */
+
+.auth-input {
+    margin-bottom: 14px;
+}
+
+
+.auth-input input {
+    width: 100%;
+
+    padding: 13px 16px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 8px;
+
+    background: #f3f4f6;
+
+    outline: none;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    transition:
+        border 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.auth-input input:focus {
+    border-color: var(--color-primary);
+
+    background: white;
+}
+
+
+/* =========================================
+   BUTTON
+   ========================================= */
+
+.auth-submit {
+    width: 100%;
+
+    margin-top: 12px;
+
+    padding: 13px 20px;
+
+    border: none;
+
+    border-radius: 999px;
+
+    background: var(--color-primary);
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+.auth-submit:hover {
+    transform: translateY(-2px);
+
+    box-shadow: var(--shadow-md);
+}
+
+
+.auth-submit:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =========================================
+   ERROR
+   ========================================= */
+
+.auth-error {
+    margin-bottom: 16px;
+
+    padding: 10px 12px;
+
+    border-radius: 8px;
+
+    background: #fef2f2;
+
+    color: var(--color-danger);
+
+    font-size: 13px;
+}
+
+
+/* =========================================
+   OVERLAY
+   ========================================= */
+
+.auth-overlay {
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 50%;
+    height: 100%;
+
+    z-index: 5;
+
+    overflow: hidden;
+
+    background: var(--color-primary);
+
+    color: white;
+
+    transition: transform 0.6s ease;
+}
+
+
+/* =========================================
+   OVERLAY CONTENT
+   ========================================= */
+
+.auth-overlay-panel {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 50px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+}
+
+
+.auth-overlay-panel h1 {
+    margin-bottom: 16px;
+
+    font-size: 32px;
+    font-weight: 700;
+}
+
+
+.auth-overlay-panel p {
+    max-width: 280px;
+
+    margin-bottom: 28px;
+
+    color: rgba(255, 255, 255, 0.9);
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   OUTLINE BUTTON
+   ========================================= */
+
+.auth-outline-button {
+    min-width: 130px;
+
+    padding: 11px 24px;
+
+    border: 1px solid white;
+
+    border-radius: 999px;
+
+    background: transparent;
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+
+.auth-outline-button:hover {
+    background: white;
+
+    color: var(--color-primary);
+}
+
+
+/* =========================================
+   SIGNUP MODE
+   ========================================= */
+
+.auth-page.signup-mode .auth-overlay {
+    transform: translateX(-100%);
+}
+
+
+.auth-page.signup-mode .login-panel {
+    transform: translateX(100%);
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.auth-page.signup-mode .signup-panel {
+    transform: translateX(0);
+
+    z-index: 2;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 700px) {
+
+    .auth-page {
+        padding: 16px;
+    }
+
+    .auth-container {
+        min-height: auto;
+
+        flex-direction: column;
+    }
+
+    .auth-form-panel {
+        position: relative;
+
+        width: 100%;
+
+        min-height: 500px;
+
+        padding: 32px;
+    }
+
+    .login-panel {
+        display: none;
+    }
+
+    .signup-panel {
+        display: flex;
+    }
+
+    .auth-overlay {
+        display: none;
+    }
+
+    .auth-page:not(.signup-mode) .login-panel {
+        display: flex;
+    }
+
+    .auth-page.signup-mode .signup-panel {
+        display: flex;
+    }
+}

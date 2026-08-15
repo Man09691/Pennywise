@@ -1,67 +1,111 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
+import Auth from "./pages/auth/Auth";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
+import Categories from "./pages/Categories";
 
+import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/layout/Sidebar";
-
+import PublicRoute from "./components/PublicRoute";
 
 function AppLayout({ children }) {
-    return (
-        <div className="app-layout">
+  return (
+    <div className="app-layout">
+      <Sidebar />
 
-            <Sidebar />
-
-            <main className="main-content">
-                <div className="page-content">
-                    {children}
-                </div>
-            </main>
-
-        </div>
-    );
+      <main className="main-content">
+        <div className="page-content">{children}</div>
+      </main>
+    </div>
+  );
 }
 
+function HomeRedirect() {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Navigate to="/login" replace />;
+}
 
 function App() {
-    return (
-        <BrowserRouter>
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* ========================================
+            PUBLIC AUTH PAGE
+            ======================================== */}
 
-            <Routes>
+        <Route path="/" element={<HomeRedirect />} />
 
-                {/* Public pages */}
-                <Route path="/" element={<Login />} />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Auth />
+            </PublicRoute>
+          }
+        />
 
-                <Route path="/login" element={<Login />} />
+        <Route
+          path="/signup"
+          element={
+            <PublicRoute>
+              <Auth />
+            </PublicRoute>
+          }
+        />
 
-                <Route path="/signup" element={<Signup />} />
+        
 
+        {/* ========================================
+            PROTECTED APPLICATION PAGES
+            ======================================== */}
 
-                {/* Application pages */}
-                <Route
-                    path="/dashboard"
-                    element={
-                        <AppLayout>
-                            <Dashboard />
-                        </AppLayout>
-                    }
-                />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Dashboard />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-                <Route
-                    path="/transactions"
-                    element={
-                        <AppLayout>
-                            <Transactions />
-                        </AppLayout>
-                    }
-                />
+        <Route
+          path="/transactions"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Transactions />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-            </Routes>
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Categories />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
-        </BrowserRouter>
-    );
+        {/* ========================================
+            UNKNOWN ROUTES
+            ======================================== */}
+
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
