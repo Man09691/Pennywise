@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
 } from "react";
+
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -41,12 +42,11 @@ function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
-  const [selectedMonth, setSelectedMonth] =
-    useState(
-      `${now.getFullYear()}-${String(
-        now.getMonth() + 1,
-      ).padStart(2, "0")}`,
-    );
+  const [selectedMonth, setSelectedMonth] = useState(
+    `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, "0")}`,
+  );
 
   const [transactionType, setTransactionType] =
     useState("expense");
@@ -59,9 +59,9 @@ function Dashboard() {
 
   const [deleting, setDeleting] = useState(false);
 
-  // --------------------------------------------------
-  // Available years
-  // --------------------------------------------------
+  // ==================================================
+  // Available Years
+  // ==================================================
 
   const availableYears = [];
 
@@ -73,9 +73,9 @@ function Dashboard() {
     availableYears.push(year);
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // Load Dashboard
-  // --------------------------------------------------
+  // ==================================================
 
   const loadDashboard = useCallback(
     async (showLoader = false) => {
@@ -88,10 +88,8 @@ function Dashboard() {
           setRefreshing(true);
         }
 
-        const token =
-          localStorage.getItem("token");
+        const token = localStorage.getItem("token");
 
-        // Load both at the same time
         const [
           summaryData,
           transactionData,
@@ -103,10 +101,8 @@ function Dashboard() {
           }),
         ]);
 
-        // Update summary
         setSummary(summaryData.summary);
 
-        // Update transactions
         setTransactions(
           transactionData.transactions || [],
         );
@@ -120,18 +116,17 @@ function Dashboard() {
     [],
   );
 
-  // --------------------------------------------------
+  // ==================================================
   // Initial Dashboard Load
-  // --------------------------------------------------
+  // ==================================================
 
   useEffect(() => {
     loadDashboard(true);
   }, [loadDashboard]);
 
-  // --------------------------------------------------
-  // IMPORTANT:
-  // Refresh when Transactions page changes data
-  // --------------------------------------------------
+  // ==================================================
+  // Refresh When Transactions Change
+  // ==================================================
 
   useEffect(() => {
     function handleTransactionsUpdated() {
@@ -151,9 +146,9 @@ function Dashboard() {
     };
   }, [loadDashboard]);
 
-  // --------------------------------------------------
-  // Refresh when returning to Dashboard
-  // --------------------------------------------------
+  // ==================================================
+  // Refresh When Returning To Dashboard
+  // ==================================================
 
   useEffect(() => {
     function handleFocus() {
@@ -162,8 +157,7 @@ function Dashboard() {
 
     function handleVisibilityChange() {
       if (
-        document.visibilityState ===
-        "visible"
+        document.visibilityState === "visible"
       ) {
         loadDashboard(false);
       }
@@ -206,9 +200,9 @@ function Dashboard() {
     };
   }, [loadDashboard]);
 
-  // --------------------------------------------------
-  // Selected month
-  // --------------------------------------------------
+  // ==================================================
+  // Selected Month
+  // ==================================================
 
   const selectedYear = Number(
     selectedMonth.split("-")[0],
@@ -226,37 +220,43 @@ function Dashboard() {
     month: "long",
   });
 
-  // --------------------------------------------------
-  // Transactions for selected month
-  // --------------------------------------------------
+  // ==================================================
+  // Transactions For Selected Month
+  // ==================================================
 
   const monthlyTransactions = useMemo(() => {
-    return transactions.filter(
-      (transaction) => {
-        if (!transaction.date) {
-          return false;
-        }
+    return transactions.filter((transaction) => {
+      if (!transaction.date) {
+        return false;
+      }
 
-        const transactionDate =
-          new Date(transaction.date);
+      const transactionDate =
+        new Date(transaction.date);
 
-        return (
-          transactionDate.getFullYear() ===
-            selectedYear &&
-          transactionDate.getMonth() + 1 ===
-            selectedMonthNumber
-        );
-      },
-    );
+      if (
+        Number.isNaN(
+          transactionDate.getTime(),
+        )
+      ) {
+        return false;
+      }
+
+      return (
+        transactionDate.getFullYear() ===
+          selectedYear &&
+        transactionDate.getMonth() + 1 ===
+          selectedMonthNumber
+      );
+    });
   }, [
     transactions,
     selectedYear,
     selectedMonthNumber,
   ]);
 
-  // --------------------------------------------------
-  // Weekly graph data
-  // --------------------------------------------------
+  // ==================================================
+  // Weekly Chart Data
+  // ==================================================
 
   const weeklyChartData = useMemo(() => {
     const daysInMonth = new Date(
@@ -308,6 +308,13 @@ function Dashboard() {
         );
 
         if (
+          !Number.isFinite(amount) ||
+          amount <= 0
+        ) {
+          return;
+        }
+
+        if (
           transaction.type === "income"
         ) {
           weeks[weekIndex].income +=
@@ -326,9 +333,35 @@ function Dashboard() {
     selectedMonthNumber,
   ]);
 
-  // --------------------------------------------------
-  // Display latest transactions
-  // --------------------------------------------------
+  // ==================================================
+  // Chart Display Data
+  //
+  // IMPORTANT:
+  // This comes AFTER weeklyChartData.
+  //
+  // We use logarithmic values only for drawing
+  // the bars. Original amounts remain untouched.
+  // ==================================================
+
+  const chartDisplayData = useMemo(() => {
+    return weeklyChartData.map((week) => ({
+      ...week,
+
+      incomeDisplay:
+        week.income > 0
+          ? Math.log10(week.income + 1)
+          : 0,
+
+      expenseDisplay:
+        week.expense > 0
+          ? Math.log10(week.expense + 1)
+          : 0,
+    }));
+  }, [weeklyChartData]);
+
+  // ==================================================
+  // Display Latest Transactions
+  // ==================================================
 
   const displayedTransactions = useMemo(() => {
     return monthlyTransactions
@@ -348,9 +381,9 @@ function Dashboard() {
     transactionType,
   ]);
 
-  // --------------------------------------------------
-  // Delete
-  // --------------------------------------------------
+  // ==================================================
+  // Delete Transaction
+  // ==================================================
 
   function handleDeleteTransaction(
     transaction,
@@ -361,6 +394,10 @@ function Dashboard() {
 
     setShowDeleteModal(true);
   }
+
+  // ==================================================
+  // Close Delete Modal
+  // ==================================================
 
   function closeDeleteModal() {
     if (deleting) {
@@ -373,6 +410,10 @@ function Dashboard() {
 
     setError("");
   }
+
+  // ==================================================
+  // Confirm Delete
+  // ==================================================
 
   async function confirmDeleteTransaction() {
     if (
@@ -393,12 +434,7 @@ function Dashboard() {
         },
       );
 
-      // ------------------------------------------------
-      // IMPORTANT:
-      // Remove deleted transaction immediately
-      // from Dashboard state.
-      // ------------------------------------------------
-
+      // Remove immediately from state
       setTransactions(
         (previousTransactions) =>
           previousTransactions.filter(
@@ -422,7 +458,7 @@ function Dashboard() {
 
       setTransactionToDelete(null);
 
-      // Notify any other component
+      // Notify other components
       window.dispatchEvent(
         new Event("transactionsUpdated"),
       );
@@ -433,9 +469,9 @@ function Dashboard() {
     }
   }
 
-  // --------------------------------------------------
-  // Edit
-  // --------------------------------------------------
+  // ==================================================
+  // Edit Transaction
+  // ==================================================
 
   function handleEditTransaction(
     transactionId,
@@ -445,9 +481,9 @@ function Dashboard() {
     );
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // Loading
-  // --------------------------------------------------
+  // ==================================================
 
   if (loading) {
     return (
@@ -459,9 +495,9 @@ function Dashboard() {
     );
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // Error
-  // --------------------------------------------------
+  // ==================================================
 
   if (
     error &&
@@ -469,7 +505,6 @@ function Dashboard() {
   ) {
     return (
       <div className="dashboard-error">
-
         <div className="dashboard-error-card">
 
           <h2>
@@ -488,21 +523,20 @@ function Dashboard() {
           </button>
 
         </div>
-
       </div>
     );
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // UI
-  // --------------------------------------------------
+  // ==================================================
 
   return (
     <div className="dashboard-new">
 
-      {/* ==========================================
+      {/* ==================================================
           HEADER
-          ========================================== */}
+          ================================================== */}
 
       <div className="dashboard-top">
 
@@ -536,9 +570,9 @@ function Dashboard() {
 
       </div>
 
-      {/* ==========================================
+      {/* ==================================================
           SUMMARY
-          ========================================== */}
+          ================================================== */}
 
       <div className="dashboard-summary-grid">
 
@@ -619,9 +653,9 @@ function Dashboard() {
 
       </div>
 
-      {/* ==========================================
+      {/* ==================================================
           STATISTICS
-          ========================================== */}
+          ================================================== */}
 
       <section className="statistics-card">
 
@@ -742,9 +776,9 @@ function Dashboard() {
 
         </div>
 
-        {/* ==========================================
+        {/* ==================================================
             GRAPH
-            ========================================== */}
+            ================================================== */}
 
         <div className="dashboard-chart">
 
@@ -754,7 +788,7 @@ function Dashboard() {
           >
 
             <BarChart
-              data={weeklyChartData}
+              data={chartDisplayData}
               margin={{
                 top: 15,
                 right: 5,
@@ -780,6 +814,12 @@ function Dashboard() {
                 }}
               />
 
+              {/* 
+                IMPORTANT:
+                The values shown here are logarithmic
+                visual values, not actual rupees.
+              */}
+
               <YAxis
                 axisLine={false}
                 tickLine={false}
@@ -787,29 +827,77 @@ function Dashboard() {
                   fontSize: 11,
                   fill: "#8b8798",
                 }}
-                tickFormatter={(value) =>
-                  value >= 1000
-                    ? `₹${value / 1000}k`
-                    : `₹${value}`
-                }
+                tickFormatter={(value) => {
+                  if (value <= 0) {
+                    return "₹0";
+                  }
+
+                  const original =
+                    Math.pow(10, value) - 1;
+
+                  if (original >= 1000000000) {
+                    return `₹${(
+                      original / 1000000000
+                    ).toFixed(0)}B`;
+                  }
+
+                  if (original >= 1000000) {
+                    return `₹${(
+                      original / 1000000
+                    ).toFixed(0)}M`;
+                  }
+
+                  if (original >= 1000) {
+                    return `₹${(
+                      original / 1000
+                    ).toFixed(0)}k`;
+                  }
+
+                  return `₹${Math.round(
+                    original,
+                  )}`;
+                }}
               />
+
+              {/* ==================================================
+                  TOOLTIP
+                  ================================================== */}
 
               <Tooltip
                 cursor={{
                   fill:
                     "rgba(124, 58, 237, 0.04)",
                 }}
-                formatter={(value) =>
-                  `₹${Number(
-                    value,
-                  ).toLocaleString(
-                    "en-IN",
-                  )}`
+                formatter={(
+                  value,
+                  name,
+                  props,
+                ) => {
+                  const originalValue =
+                    name === "Income"
+                      ? props.payload.income
+                      : props.payload.expense;
+
+                  return [
+                    `₹${Number(
+                      originalValue,
+                    ).toLocaleString(
+                      "en-IN",
+                    )}`,
+                    name,
+                  ];
+                }}
+                labelFormatter={(label) =>
+                  label
                 }
               />
 
+              {/* ==================================================
+                  INCOME BAR
+                  ================================================== */}
+
               <Bar
-                dataKey="income"
+                dataKey="incomeDisplay"
                 name="Income"
                 fill="#7c3aed"
                 radius={[
@@ -821,8 +909,12 @@ function Dashboard() {
                 barSize={13}
               />
 
+              {/* ==================================================
+                  EXPENSE BAR
+                  ================================================== */}
+
               <Bar
-                dataKey="expense"
+                dataKey="expenseDisplay"
                 name="Expenses"
                 fill="#f97316"
                 radius={[
@@ -840,7 +932,9 @@ function Dashboard() {
 
         </div>
 
-        {/* Legend */}
+        {/* ==================================================
+            LEGEND
+            ================================================== */}
 
         <div className="chart-legend">
 
@@ -858,9 +952,9 @@ function Dashboard() {
 
       </section>
 
-      {/* ==========================================
+      {/* ==================================================
           TRANSACTIONS
-          ========================================== */}
+          ================================================== */}
 
       <section className="dashboard-transactions-card">
 
@@ -881,8 +975,7 @@ function Dashboard() {
               {transactionType ===
               "income"
                 ? "income"
-                : "expenses"}
-              .
+                : "expenses"}.
             </p>
 
           </div>
@@ -899,7 +992,9 @@ function Dashboard() {
 
         </div>
 
-        {/* Toggle */}
+        {/* ==================================================
+            TOGGLE
+            ================================================== */}
 
         <div className="transaction-toggle">
 
@@ -939,7 +1034,9 @@ function Dashboard() {
 
         </div>
 
-        {/* Transaction List */}
+        {/* ==================================================
+            TRANSACTION LIST
+            ================================================== */}
 
         <div className="dashboard-transaction-list">
 
@@ -1117,7 +1214,9 @@ function Dashboard() {
 
         </div>
 
-        {/* Refresh indicator */}
+        {/* ==================================================
+            REFRESH INDICATOR
+            ================================================== */}
 
         {refreshing && (
           <div className="dashboard-refreshing">
@@ -1127,9 +1226,9 @@ function Dashboard() {
 
       </section>
 
-      {/* ==========================================
+      {/* ==================================================
           DELETE MODAL
-          ========================================== */}
+          ================================================== */}
 
       {showDeleteModal &&
         transactionToDelete && (
