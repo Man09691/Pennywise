@@ -4,6 +4,8 @@ import Auth from "./pages/auth/Auth";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Categories from "./pages/Categories";
+import Budget from "./pages/Budgets";
+import Profile from "./pages/Profile";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/layout/Sidebar";
@@ -59,7 +61,27 @@ function App() {
           }
         />
 
-        
+        <Route
+          path="/budgets"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Budget />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Profile />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
 
         {/* ========================================
             PROTECTED APPLICATION PAGES

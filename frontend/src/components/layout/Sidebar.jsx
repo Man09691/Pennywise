@@ -7,8 +7,14 @@ import {
   User,
   LogOut,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 function Sidebar() {
+  const navigate = useNavigate();
+  function handleLogout() {
+    localStorage.removeItem("token");
+    navigate("/login", { replace: true });
+  }
   return (
     <aside className="sidebar">
       {/* Brand */}
@@ -72,9 +78,8 @@ function Sidebar() {
       </nav>
 
       {/* Logout */}
-      <button className="logout-button">
-        <LogOut size={20} />
-        <span>Logout</span>
+      <button type="button" className="logout-button" onClick={handleLogout}>
+        Logout
       </button>
     </aside>
   );
