@@ -1,169 +1,481 @@
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { apiRequest } from "../services/api";
-import { Pencil, Trash2 } from "lucide-react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
 
-function Transactions() {
+import { useNavigate } from "react-router-dom";
+
+import {
+  Pencil,
+  Trash2,
+  ArrowUpRight,
+  ArrowDownRight,
+  Wallet,
+  Plus,
+  ChevronDown,
+} from "lucide-react";
+
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
+
+import { getDashboardSummary } from "../services/dashboardService";
+import { apiRequest } from "../services/api";
+
+function Dashboard() {
+  const navigate = useNavigate();
+
+  const now = new Date();
+
+  // ==================================================
+  // STATE
+  // ==================================================
+
+  const [summary, setSummary] = useState(null);
+
   const [transactions, setTransactions] = useState([]);
+
   const [loading, setLoading] = useState(true);
+
+  const [refreshing, setRefreshing] = useState(false);
+
   const [error, setError] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [transactionToDelete, setTransactionToDelete] = useState(null);
+
+  const [selectedMonth, setSelectedMonth] = useState(
+    `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, "0")}`,
+  );
+
+  const [transactionType, setTransactionType] =
+    useState("expense");
+
+  const [showDeleteModal, setShowDeleteModal] =
+    useState(false);
+
+  const [
+    transactionToDelete,
+    setTransactionToDelete,
+  ] = useState(null);
+
   const [deleting, setDeleting] = useState(false);
 
-  const [categories, setCategories] = useState([]);
+  // ==================================================
+  // AVAILABLE YEARS
+  // ==================================================
 
-  const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
+  const availableYears = [];
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  for (
+    let year = now.getFullYear();
+    year >= now.getFullYear() - 5;
+    year--
+  ) {
+    availableYears.push(year);
+  }
 
-  const [formData, setFormData] = useState({
-    title: "",
-    amount: "",
-    type: "expense",
-    category: "",
-    paymentMethod: "",
-    date: "",
-    note: "",
+  // ==================================================
+  // LOAD DASHBOARD
+  // ==================================================
+
+  const loadDashboard = useCallback(
+    async (showLoader = false) => {
+      try {
+        setError("");
+
+        if (showLoader) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
+
+        const token = localStorage.getItem("token");
+
+        /*
+         * Load summary and transactions together.
+         *
+         * This refreshes:
+         *
+         * 1. Total Balance
+         * 2. Total Income
+         * 3. Total Expense
+         * 4. Graph
+         * 5. Activity transactions
+         */
+
+        const [
+          summaryData,
+          transactionData,
+        ] = await Promise.all([
+          getDashboardSummary(token),
+
+          apiRequest("/transactions", {
+            cache: "no-store",
+          }),
+        ]);
+
+        setSummary(
+          summaryData?.summary || null,
+        );
+
+        setTransactions(
+          transactionData?.transactions || [],
+        );
+      } catch (error) {
+        console.error(
+          "Dashboard loading error:",
+          error,
+        );
+
+        setError(error.message);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [],
+  );
+
+  // ==================================================
+  // INITIAL DASHBOARD LOAD
+  // ==================================================
+
+  useEffect(() => {
+    loadDashboard(true);
+  }, [loadDashboard]);
+
+  // ==================================================
+  // LISTEN FOR TRANSACTION CHANGES
+  // ==================================================
+
+  useEffect(() => {
+    function handleTransactionsUpdated() {
+      /*
+       * Transactions.jsx dispatches this event
+       * after:
+       *
+       * ADD
+       * EDIT
+       * DELETE
+       *
+       * Dashboard then gets fresh data from backend.
+       */
+
+      loadDashboard(false);
+    }
+
+    window.addEventListener(
+      "transactionsUpdated",
+      handleTransactionsUpdated,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "transactionsUpdated",
+        handleTransactionsUpdated,
+      );
+    };
+  }, [loadDashboard]);
+
+  // ==================================================
+  // REFRESH WHEN USER RETURNS TO DASHBOARD
+  // ==================================================
+
+  useEffect(() => {
+    function handleFocus() {
+      loadDashboard(false);
+    }
+
+    function handleVisibilityChange() {
+      if (
+        document.visibilityState === "visible"
+      ) {
+        loadDashboard(false);
+      }
+    }
+
+    function handlePageShow() {
+      loadDashboard(false);
+    }
+
+    window.addEventListener(
+      "focus",
+      handleFocus,
+    );
+
+    window.addEventListener(
+      "pageshow",
+      handlePageShow,
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "focus",
+        handleFocus,
+      );
+
+      window.removeEventListener(
+        "pageshow",
+        handlePageShow,
+      );
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
+    };
+  }, [loadDashboard]);
+
+  // ==================================================
+  // SELECTED YEAR / MONTH
+  // ==================================================
+
+  const selectedYear = Number(
+    selectedMonth.split("-")[0],
+  );
+
+  const selectedMonthNumber = Number(
+    selectedMonth.split("-")[1],
+  );
+
+  const monthName = new Date(
+    selectedYear,
+    selectedMonthNumber - 1,
+    1,
+  ).toLocaleString("en-IN", {
+    month: "long",
   });
 
-  // --------------------------------------------------
-  // Load all transactions
-  // --------------------------------------------------
+  // ==================================================
+  // TRANSACTIONS FOR SELECTED MONTH
+  // ==================================================
 
-  async function loadTransactions() {
-    try {
-      setLoading(true);
-      setError("");
+  const monthlyTransactions = useMemo(() => {
+    return transactions.filter(
+      (transaction) => {
+        if (!transaction.date) {
+          return false;
+        }
 
-      const data = await apiRequest("/transactions");
+        const transactionDate =
+          new Date(transaction.date);
 
-      setTransactions(data.transactions);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
+        if (
+          Number.isNaN(
+            transactionDate.getTime(),
+          )
+        ) {
+          return false;
+        }
+
+        return (
+          transactionDate.getFullYear() ===
+            selectedYear &&
+          transactionDate.getMonth() + 1 ===
+            selectedMonthNumber
+        );
+      },
+    );
+  }, [
+    transactions,
+    selectedYear,
+    selectedMonthNumber,
+  ]);
+
+  // ==================================================
+  // WEEKLY GRAPH DATA
+  // ==================================================
+
+  const weeklyChartData = useMemo(() => {
+    const daysInMonth = new Date(
+      selectedYear,
+      selectedMonthNumber,
+      0,
+    ).getDate();
+
+    const numberOfWeeks = Math.ceil(
+      daysInMonth / 7,
+    );
+
+    const weeks = [];
+
+    for (
+      let i = 0;
+      i < numberOfWeeks;
+      i++
+    ) {
+      weeks.push({
+        week: `Week ${i + 1}`,
+        income: 0,
+        expense: 0,
+      });
     }
-  }
 
-  // --------------------------------------------------
-  // Load all categories
-  // --------------------------------------------------
+    monthlyTransactions.forEach(
+      (transaction) => {
+        if (!transaction.date) {
+          return;
+        }
 
-  async function loadCategories() {
-    try {
-      const data = await apiRequest("/categories");
+        const transactionDate =
+          new Date(transaction.date);
 
-      setCategories(data.categories);
-    } catch (error) {
-      setError(error.message);
-    }
-  }
+        const day =
+          transactionDate.getDate();
 
-  // --------------------------------------------------
-  // Load transactions and categories when page opens
-  // --------------------------------------------------
+        const weekIndex = Math.floor(
+          (day - 1) / 7,
+        );
 
-  useEffect(() => {
-    async function loadData() {
-      await Promise.all([loadTransactions(), loadCategories()]);
-    }
+        if (!weeks[weekIndex]) {
+          return;
+        }
 
-    loadData();
-  }, []);
+        const amount = Number(
+          transaction.amount,
+        );
 
-  // --------------------------------------------------
-  // Handle normal form field changes
-  // --------------------------------------------------
+        if (!Number.isFinite(amount)) {
+          return;
+        }
 
-  function handleChange(event) {
-    const { name, value } = event.target;
+        if (
+          transaction.type === "income"
+        ) {
+          weeks[weekIndex].income += amount;
+        } else {
+          weeks[weekIndex].expense += amount;
+        }
+      },
+    );
 
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  }
+    return weeks;
+  }, [
+    monthlyTransactions,
+    selectedYear,
+    selectedMonthNumber,
+  ]);
 
-  // --------------------------------------------------
-  // Open transaction for editing
-  // --------------------------------------------------
+  // ==================================================
+  // DISPLAYED TRANSACTIONS
+  // ==================================================
 
-  function handleEditTransaction(transaction) {
+  const displayedTransactions =
+    useMemo(() => {
+      return [...monthlyTransactions]
+        .filter(
+          (transaction) =>
+            transaction.type ===
+            transactionType,
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.date) -
+            new Date(a.date),
+        )
+        .slice(0, 5);
+    }, [
+      monthlyTransactions,
+      transactionType,
+    ]);
+
+  // ==================================================
+  // DELETE
+  // ==================================================
+
+  function handleDeleteTransaction(
+    transaction,
+  ) {
     setError("");
 
-    setEditingTransaction(transaction);
+    setTransactionToDelete(
+      transaction,
+    );
 
-    setFormData({
-      title: transaction.title,
-      amount: transaction.amount,
-      type: transaction.type,
-      category: transaction.category._id,
-      paymentMethod: transaction.paymentMethod,
-      date: transaction.date
-        ? new Date(transaction.date).toISOString().split("T")[0]
-        : "",
-      note: transaction.note || "",
-    });
-
-    setShowCategoryForm(false);
-    setNewCategoryName("");
-
-    setShowForm(true);
-  }
-
-  // --------------------------------------------------
-  // Automatically open edit form from Dashboard
-  // --------------------------------------------------
-
-  useEffect(() => {
-    const editId = searchParams.get("edit");
-
-    if (!editId || transactions.length === 0) {
-      return;
-    }
-
-    const transaction = transactions.find((item) => item._id === editId);
-
-    if (transaction) {
-      handleEditTransaction(transaction);
-
-      // Remove ?edit=... from URL
-      setSearchParams({});
-    }
-  }, [transactions, searchParams, setSearchParams]);
-
-  // --------------------------------------------------
-  // Delete transaction
-  // --------------------------------------------------
-
-  function handleDeleteTransaction(transaction) {
-    setError("");
-    setTransactionToDelete(transaction);
     setShowDeleteModal(true);
   }
 
+  // ==================================================
+  // CLOSE DELETE MODAL
+  // ==================================================
+
+  function closeDeleteModal() {
+    if (deleting) {
+      return;
+    }
+
+    setShowDeleteModal(false);
+
+    setTransactionToDelete(null);
+
+    setError("");
+  }
+
+  // ==================================================
+  // CONFIRM DELETE
+  // ==================================================
+
   async function confirmDeleteTransaction() {
-    if (!transactionToDelete || deleting) {
+    if (
+      !transactionToDelete ||
+      deleting
+    ) {
       return;
     }
 
     setDeleting(true);
+
     setError("");
 
     try {
-      await apiRequest(`/transactions/${transactionToDelete._id}`, {
-        method: "DELETE",
-      });
+      await apiRequest(
+        `/transactions/${transactionToDelete._id}`,
+        {
+          method: "DELETE",
+        },
+      );
 
-      await loadTransactions();
+      /*
+       * Refresh Dashboard immediately.
+       *
+       * This updates:
+       * - summary
+       * - graph
+       * - activity
+       */
+
+      await loadDashboard(false);
+
+      /*
+       * Close existing delete modal.
+       */
 
       setShowDeleteModal(false);
+
       setTransactionToDelete(null);
+
+      /*
+       * Notify Transactions page too.
+       */
+
+      window.dispatchEvent(
+        new Event(
+          "transactionsUpdated",
+        ),
+      );
     } catch (error) {
       setError(error.message);
     } finally {
@@ -171,531 +483,785 @@ function Transactions() {
     }
   }
 
-  // --------------------------------------------------
-  // Add a new custom category
-  // --------------------------------------------------
+  // ==================================================
+  // EDIT
+  // ==================================================
 
-  async function handleAddCategory() {
-    setError("");
-
-    if (!newCategoryName.trim()) {
-      setError("Category name is required.");
-      return;
-    }
-
-    try {
-      const data = await apiRequest("/categories", {
-        method: "POST",
-        body: JSON.stringify({
-          name: newCategoryName.trim(),
-          type: formData.type,
-        }),
-      });
-
-      // Reload categories
-      await loadCategories();
-
-      // Automatically select newly created category
-      setFormData({
-        ...formData,
-        category: data.category._id,
-      });
-
-      // Close category form
-      setShowCategoryForm(false);
-
-      // Clear category input
-      setNewCategoryName("");
-    } catch (error) {
-      setError(error.message);
-    }
+  function handleEditTransaction(
+    transactionId,
+  ) {
+    navigate(
+      `/transactions?edit=${transactionId}`,
+    );
   }
 
-  // --------------------------------------------------
-  // Submit transaction
-  // --------------------------------------------------
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-
-    if (submitting) {
-      return;
-    }
-
-    setError("");
-
-    // Basic frontend validation
-    if (
-      !formData.title.trim() ||
-      !formData.amount ||
-      !formData.category ||
-      !formData.paymentMethod
-    ) {
-      setError("Please fill in all required fields.");
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
-      const transactionData = {
-        title: formData.title.trim(),
-        amount: Number(formData.amount),
-        type: formData.type,
-        category: formData.category,
-        paymentMethod: formData.paymentMethod,
-        date: formData.date || undefined,
-        note: formData.note.trim() || undefined,
-      };
-
-      // Edit existing transaction
-      if (editingTransaction) {
-        await apiRequest(`/transactions/${editingTransaction._id}`, {
-          method: "PUT",
-          body: JSON.stringify(transactionData),
-        });
-      }
-
-      // Add new transaction
-      else {
-        await apiRequest("/transactions", {
-          method: "POST",
-          body: JSON.stringify(transactionData),
-        });
-      }
-
-      // Refresh transactions
-      await loadTransactions();
-
-      // Close modal
-      setShowForm(false);
-
-      // Clear editing transaction
-      setEditingTransaction(null);
-
-      // Reset transaction form
-      setFormData({
-        title: "",
-        amount: "",
-        type: "expense",
-        category: "",
-        paymentMethod: "",
-        date: "",
-        note: "",
-      });
-
-      // Reset category form
-      setShowCategoryForm(false);
-      setNewCategoryName("");
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  // --------------------------------------------------
-  // Categories matching selected transaction type
-  // --------------------------------------------------
-
-  const filteredCategories = categories.filter(
-    (category) => category.type === formData.type,
-  );
-
-  // --------------------------------------------------
-  // Loading
-  // --------------------------------------------------
+  // ==================================================
+  // LOADING
+  // ==================================================
 
   if (loading) {
-    return <h1>Loading transactions...</h1>;
+    return (
+      <div className="dashboard-loading">
+        <div className="dashboard-loading-card">
+          Loading your dashboard...
+        </div>
+      </div>
+    );
   }
 
-  // --------------------------------------------------
-  // Error
-  // --------------------------------------------------
+  // ==================================================
+  // ERROR
+  // ==================================================
 
-  if (error && !showForm) {
-    return <h1>{error}</h1>;
+  if (
+    error &&
+    !showDeleteModal
+  ) {
+    return (
+      <div className="dashboard-error">
+        <div className="dashboard-error-card">
+          <h2>
+            Something went wrong
+          </h2>
+
+          <p>{error}</p>
+
+          <button
+            type="button"
+            onClick={() =>
+              loadDashboard(true)
+            }
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  // --------------------------------------------------
+  // ==================================================
   // UI
-  // --------------------------------------------------
+  // ==================================================
 
   return (
-    <div className="transactions-page">
-      {/* Header */}
+    <div className="dashboard-new">
 
-      <div className="transactions-header">
-        <h1>Transactions</h1>
+      {/* ==================================================
+          HEADER
+          ================================================== */}
 
-        <p>Manage your income and expenses.</p>
+      <div className="dashboard-top">
+
+        <div>
+
+          <span className="dashboard-label">
+            FINANCIAL OVERVIEW
+          </span>
+
+          <h1>
+            Dashboard
+          </h1>
+
+          <p>
+            Here's what's happening with
+            your money.
+          </p>
+
+        </div>
+
+        <button
+          type="button"
+          className="dashboard-add-button"
+          onClick={() =>
+            navigate("/transactions")
+          }
+        >
+          <Plus size={18} />
+
+          Add Transaction
+        </button>
+
       </div>
 
-      {/* Add Transaction Button */}
+      {/* ==================================================
+          SUMMARY
+          ================================================== */}
 
-      <button
-        type="button"
-        onClick={() => {
-          setEditingTransaction(null);
+      <div className="dashboard-summary-grid">
 
-          setFormData({
-            title: "",
-            amount: "",
-            type: "expense",
-            category: "",
-            paymentMethod: "",
-            date: "",
-            note: "",
-          });
+        <div className="dashboard-summary-card balance-summary">
 
-          setShowCategoryForm(false);
-          setNewCategoryName("");
-          setError("");
-
-          setShowForm(true);
-        }}
-      >
-        + Add Transaction
-      </button>
-
-      {/* Transaction List */}
-
-      <div className="transactions-list">
-        {transactions.map((transaction) => (
-          <div className="transaction-item" key={transaction._id}>
-            <div>
-              <h3>{transaction.title}</h3>
-
-              <p>
-                {transaction.category.name}
-                {" · "}
-                {transaction.paymentMethod}
-              </p>
-            </div>
-
-            <div>
-              <strong>
-                {transaction.type === "income" ? "+" : "-"}₹{transaction.amount}
-              </strong>
-
-              {/* Edit */}
-
-              <button
-                type="button"
-                title="Edit transaction"
-                onClick={() => handleEditTransaction(transaction)}
-              >
-                <Pencil size={18} />
-              </button>
-
-              {/* Delete */}
-
-              <button
-                type="button"
-                title="Delete transaction"
-                onClick={() => handleDeleteTransaction(transaction)}
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
+          <div className="summary-icon">
+            <Wallet size={20} />
           </div>
-        ))}
-      </div>
 
-      {/* Add / Edit Transaction Modal */}
+          <div>
 
-      {showForm && (
-        <div className="transaction-form">
-          <div className="transaction-form-card">
-            {/* Close */}
-
-            <button
-              type="button"
-              className="modal-close"
-              onClick={() => {
-                setShowForm(false);
-                setEditingTransaction(null);
-                setError("");
-                setShowCategoryForm(false);
-                setNewCategoryName("");
-
-                // Remove edit parameter if present
-                setSearchParams({});
-              }}
-            >
-              ×
-            </button>
-
-            {/* Form title */}
+            <span>
+              Total Balance
+            </span>
 
             <h2>
-              {editingTransaction ? "Edit Transaction" : "Add Transaction"}
+              ₹
+              {Number(
+                summary?.balance || 0,
+              ).toLocaleString(
+                "en-IN",
+              )}
             </h2>
 
-            {/* Error */}
+          </div>
 
-            {error && <p className="form-error">{error}</p>}
+        </div>
 
-            <form onSubmit={handleSubmit}>
-              {/* Title */}
+        <div className="dashboard-summary-card income-summary">
 
-              <div className="form-group">
-                <label>Title</label>
+          <div className="summary-icon">
+            <ArrowUpRight size={20} />
+          </div>
 
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Enter transaction title"
-                />
-              </div>
+          <div>
 
-              {/* Amount */}
+            <span>
+              Total Income
+            </span>
 
-              <div className="form-group">
-                <label>Amount</label>
+            <h2>
+              ₹
+              {Number(
+                summary?.totalIncome ||
+                  0,
+              ).toLocaleString(
+                "en-IN",
+              )}
+            </h2>
 
-                <input
-                  type="number"
-                  name="amount"
-                  value={formData.amount}
-                  onChange={handleChange}
-                  placeholder="Enter amount"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
+          </div>
 
-              {/* Type */}
+        </div>
 
-              <div className="form-group">
-                <label>Type</label>
+        <div className="dashboard-summary-card expense-summary">
 
-                <select
-                  name="type"
-                  value={formData.type}
-                  onChange={(event) => {
-                    setFormData({
-                      ...formData,
-                      type: event.target.value,
-                      category: "",
-                    });
+          <div className="summary-icon">
+            <ArrowDownRight size={20} />
+          </div>
 
-                    setShowCategoryForm(false);
-                    setNewCategoryName("");
-                  }}
-                >
-                  <option value="expense">Expense</option>
+          <div>
 
-                  <option value="income">Income</option>
-                </select>
-              </div>
+            <span>
+              Total Expenses
+            </span>
 
-              {/* Category */}
+            <h2>
+              ₹
+              {Number(
+                summary?.totalExpense ||
+                  0,
+              ).toLocaleString(
+                "en-IN",
+              )}
+            </h2>
 
-              <div className="form-group">
-                <label>Category</label>
+          </div>
 
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={(event) => {
-                    const value = event.target.value;
+        </div>
 
-                    if (value === "other") {
-                      setShowCategoryForm(true);
+      </div>
 
-                      setFormData({
-                        ...formData,
-                        category: "",
-                      });
+      {/* ==================================================
+          STATISTICS
+          ================================================== */}
 
-                      return;
-                    }
+      <section className="statistics-card">
 
-                    setFormData({
-                      ...formData,
-                      category: value,
-                    });
+        <div className="statistics-header">
 
-                    setShowCategoryForm(false);
-                  }}
-                >
-                  <option value="">Select category</option>
+          <div>
 
-                  {filteredCategories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
+            <span className="statistics-small-title">
+              STATISTICS
+            </span>
 
-                  <option value="other">Other → Add new category</option>
-                </select>
+            <h2>
+              {monthName}{" "}
+              {selectedYear}
+            </h2>
 
-                {/* Add New Category */}
+            <p>
+              01 {monthName} -{" "}
+              {new Date(
+                selectedYear,
+                selectedMonthNumber,
+                0,
+              ).getDate()}{" "}
+              {monthName}
+            </p>
 
-                {showCategoryForm && (
-                  <div className="add-category-form">
-                    <label>New Category</label>
+          </div>
 
-                    <input
-                      type="text"
-                      value={newCategoryName}
-                      onChange={(event) =>
-                        setNewCategoryName(event.target.value)
+          <div className="statistics-filters">
+
+            <label className="month-selector">
+
+              <select
+                value={
+                  selectedMonthNumber
+                }
+                onChange={(event) => {
+
+                  const month =
+                    String(
+                      event.target.value,
+                    ).padStart(
+                      2,
+                      "0",
+                    );
+
+                  setSelectedMonth(
+                    `${selectedYear}-${month}`,
+                  );
+                }}
+              >
+
+                {[
+                  "January",
+                  "February",
+                  "March",
+                  "April",
+                  "May",
+                  "June",
+                  "July",
+                  "August",
+                  "September",
+                  "October",
+                  "November",
+                  "December",
+                ].map(
+                  (month, index) => (
+                    <option
+                      key={month}
+                      value={
+                        index + 1
                       }
-                      placeholder="Enter category name"
-                    />
-
-                    <div>
-                      <button type="button" onClick={handleAddCategory}>
-                        Add Category
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowCategoryForm(false);
-                          setNewCategoryName("");
-                          setError("");
-                        }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+                    >
+                      {month}
+                    </option>
+                  ),
                 )}
+
+              </select>
+
+              <ChevronDown
+                size={16}
+              />
+
+            </label>
+
+            <label className="month-selector">
+
+              <select
+                value={selectedYear}
+                onChange={(event) => {
+
+                  const year =
+                    Number(
+                      event.target.value,
+                    );
+
+                  setSelectedMonth(
+                    `${year}-${String(
+                      selectedMonthNumber,
+                    ).padStart(
+                      2,
+                      "0",
+                    )}`,
+                  );
+                }}
+              >
+
+                {availableYears.map(
+                  (year) => (
+                    <option
+                      key={year}
+                      value={year}
+                    >
+                      {year}
+                    </option>
+                  ),
+                )}
+
+              </select>
+
+              <ChevronDown
+                size={16}
+              />
+
+            </label>
+
+          </div>
+
+        </div>
+
+        {/* ==================================================
+            GRAPH
+            ================================================== */}
+
+        <div className="dashboard-chart">
+
+          <ResponsiveContainer
+            width="100%"
+            height={300}
+          >
+
+            <BarChart
+              data={weeklyChartData}
+              margin={{
+                top: 15,
+                right: 5,
+                left: -15,
+                bottom: 5,
+              }}
+              barGap={5}
+            >
+
+              <CartesianGrid
+                strokeDasharray="4 5"
+                vertical={false}
+                stroke="#e9e5f5"
+              />
+
+              <XAxis
+                dataKey="week"
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fontSize: 12,
+                  fill: "#8b8798",
+                }}
+              />
+
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{
+                  fontSize: 11,
+                  fill: "#8b8798",
+                }}
+                tickFormatter={(value) =>
+                  value >= 1000
+                    ? `₹${value / 1000}k`
+                    : `₹${value}`
+                }
+              />
+
+              <Tooltip
+                cursor={{
+                  fill:
+                    "rgba(124, 58, 237, 0.04)",
+                }}
+                formatter={(value) =>
+                  `₹${Number(
+                    value,
+                  ).toLocaleString(
+                    "en-IN",
+                  )}`
+                }
+              />
+
+              <Bar
+                dataKey="income"
+                name="Income"
+                fill="#7c3aed"
+                radius={[
+                  7,
+                  7,
+                  0,
+                  0,
+                ]}
+                barSize={13}
+              />
+
+              <Bar
+                dataKey="expense"
+                name="Expenses"
+                fill="#f97316"
+                radius={[
+                  7,
+                  7,
+                  0,
+                  0,
+                ]}
+                barSize={13}
+              />
+
+            </BarChart>
+
+          </ResponsiveContainer>
+
+        </div>
+
+        {/* LEGEND */}
+
+        <div className="chart-legend">
+
+          <div>
+            <span className="legend-dot income-dot"></span>
+            Income
+          </div>
+
+          <div>
+            <span className="legend-dot expense-dot"></span>
+            Expenses
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* ==================================================
+          ACTIVITY
+          ================================================== */}
+
+      <section className="dashboard-transactions-card">
+
+        <div className="transactions-header">
+
+          <div>
+
+            <span className="statistics-small-title">
+              ACTIVITY
+            </span>
+
+            <h2>
+              Transactions
+            </h2>
+
+            <p>
+              Your latest{" "}
+              {transactionType ===
+              "income"
+                ? "income"
+                : "expenses"}.
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            className="view-all-button"
+            onClick={() =>
+              navigate(
+                "/transactions",
+              )
+            }
+          >
+            View All
+          </button>
+
+        </div>
+
+        {/* TOGGLE */}
+
+        <div className="transaction-toggle">
+
+          <button
+            type="button"
+            className={
+              transactionType ===
+              "income"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setTransactionType(
+                "income",
+              )
+            }
+          >
+            Income
+          </button>
+
+          <button
+            type="button"
+            className={
+              transactionType ===
+              "expense"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setTransactionType(
+                "expense",
+              )
+            }
+          >
+            Expenses
+          </button>
+
+        </div>
+
+        {/* TRANSACTION LIST */}
+
+        <div className="dashboard-transaction-list">
+
+          {displayedTransactions.length ===
+          0 ? (
+
+            <div className="dashboard-empty">
+
+              <p>
+                No{" "}
+                {transactionType ===
+                "income"
+                  ? "income"
+                  : "expenses"}{" "}
+                found for{" "}
+                {monthName}.
+              </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    "/transactions",
+                  )
+                }
+              >
+                Add Transaction
+              </button>
+
+            </div>
+
+          ) : (
+
+            displayedTransactions.map(
+              (transaction) => {
+
+                const transactionDate =
+                  new Date(
+                    transaction.date,
+                  );
+
+                return (
+                  <div
+                    className="dashboard-transaction-item"
+                    key={
+                      transaction._id
+                    }
+                  >
+
+                    <div className="transaction-info">
+
+                      <div
+                        className={
+                          transaction.type ===
+                          "income"
+                            ? "transaction-icon income-transaction-icon"
+                            : "transaction-icon expense-transaction-icon"
+                        }
+                      >
+
+                        {transaction.type ===
+                        "income" ? (
+                          <ArrowUpRight
+                            size={18}
+                          />
+                        ) : (
+                          <ArrowDownRight
+                            size={18}
+                          />
+                        )}
+
+                      </div>
+
+                      <div>
+
+                        <h3>
+                          {
+                            transaction.title
+                          }
+                        </h3>
+
+                        <p>
+
+                          {transaction.category
+                            ?.name ||
+                            "Unknown category"}
+
+                          {" · "}
+
+                          {
+                            transaction.paymentMethod
+                          }
+
+                          {" · "}
+
+                          {transactionDate.toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                            },
+                          )}
+
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                    <div className="transaction-right">
+
+                      <strong
+                        className={
+                          transaction.type ===
+                          "income"
+                            ? "income-amount"
+                            : "expense-amount"
+                        }
+                      >
+
+                        {transaction.type ===
+                        "income"
+                          ? "+"
+                          : "-"}
+                        ₹
+                        {Number(
+                          transaction.amount,
+                        ).toLocaleString(
+                          "en-IN",
+                        )}
+
+                      </strong>
+
+                      <div className="transaction-actions">
+
+                        <button
+                          type="button"
+                          title="Edit transaction"
+                          onClick={() =>
+                            handleEditTransaction(
+                              transaction._id,
+                            )
+                          }
+                        >
+                          <Pencil
+                            size={16}
+                          />
+                        </button>
+
+                        <button
+                          type="button"
+                          title="Delete transaction"
+                          onClick={() =>
+                            handleDeleteTransaction(
+                              transaction,
+                            )
+                          }
+                        >
+                          <Trash2
+                            size={16}
+                          />
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+                );
+              },
+            )
+
+          )}
+
+        </div>
+
+        {/* REFRESH INDICATOR */}
+
+        {refreshing && (
+          <div className="dashboard-refreshing">
+            Updating dashboard...
+          </div>
+        )}
+
+      </section>
+
+      {/* ==================================================
+          DELETE MODAL
+          ================================================== */}
+
+      {showDeleteModal &&
+        transactionToDelete && (
+
+          <div className="delete-modal-overlay">
+
+            <div className="delete-modal">
+
+              <div className="delete-modal-icon">
+                <Trash2 size={24} />
               </div>
 
-              {/* Payment Method */}
+              <h2>
+                Delete Transaction?
+              </h2>
 
-              <div className="form-group">
-                <label>Payment Method</label>
+              <p>
+                Are you sure you want to
+                delete{" "}
+                <strong>
+                  "{transactionToDelete.title}"
+                </strong>
+                ?
+              </p>
 
-                <select
-                  name="paymentMethod"
-                  value={formData.paymentMethod}
-                  onChange={handleChange}
-                >
-                  <option value="">Select payment method</option>
+              <p className="delete-modal-warning">
+                This transaction will be
+                removed from your
+                transaction list.
+              </p>
 
-                  <option value="Debit Card">Debit Card</option>
+              {error && (
+                <p className="form-error">
+                  {error}
+                </p>
+              )}
 
-                  <option value="Credit Card">Credit Card</option>
+              <div className="delete-modal-actions">
 
-                  <option value="UPI">UPI</option>
-
-                  <option value="Card">Card</option>
-
-                  <option value="Bank Transfer">Bank Transfer</option>
-                </select>
-              </div>
-
-              {/* Date */}
-
-              <div className="form-group">
-                <label>Date</label>
-
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Note */}
-
-              <div className="form-group">
-                <label>Note</label>
-
-                <textarea
-                  name="note"
-                  value={formData.note}
-                  onChange={handleChange}
-                  placeholder="Optional note"
-                />
-              </div>
-
-              {/* Buttons */}
-
-              <div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingTransaction(null);
-                    setError("");
-                    setShowCategoryForm(false);
-                    setNewCategoryName("");
-                    setSearchParams({});
-                  }}
+                  onClick={
+                    closeDeleteModal
+                  }
+                  disabled={deleting}
                 >
                   Cancel
                 </button>
 
-                <button type="submit" disabled={submitting}>
-                  {submitting
-                    ? editingTransaction
-                      ? "Updating..."
-                      : "Adding..."
-                    : editingTransaction
-                      ? "Update Transaction"
-                      : "Add Transaction"}
+                <button
+                  type="button"
+                  className="delete-confirm-button"
+                  onClick={
+                    confirmDeleteTransaction
+                  }
+                  disabled={deleting}
+                >
+                  {deleting
+                    ? "Deleting..."
+                    : "Delete"}
                 </button>
+
               </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {showDeleteModal && transactionToDelete && (
-        <div className="delete-modal-overlay">
-          <div className="delete-modal">
-            <div className="delete-modal-icon">
-              <Trash2 size={24} />
             </div>
 
-            <h2>Delete Transaction?</h2>
-
-            <p>
-              Are you sure you want to delete{" "}
-              <strong>"{transactionToDelete.title}"</strong>?
-            </p>
-
-            <p className="delete-modal-warning">
-              This transaction will be removed from your transaction list.
-            </p>
-
-            <div className="delete-modal-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setTransactionToDelete(null);
-                  setError("");
-                }}
-                disabled={deleting}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                className="delete-confirm-button"
-                onClick={confirmDeleteTransaction}
-                disabled={deleting}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
+
     </div>
   );
 }
 
-export default Transactions;
+export default Dashboard;
+

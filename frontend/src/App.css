@@ -1,60 +1,50 @@
-/* ========================================
-   APP LAYOUT
-   ======================================== */
+
+/* =========================================================
+   PENNYWISE - GLOBAL / APP LAYOUT
+   ========================================================= */
 
 :root {
     --sidebar-width: 260px;
 }
 
-
-/* Main application wrapper */
+/* =========================================================
+   APP LAYOUT
+   ========================================================= */
 
 .app-layout {
     min-height: 100vh;
     width: 100%;
 }
 
-
-/* Main content area */
-
 .main-content {
-    margin-left: var(--sidebar-width);
-
-    min-height: 100vh;
-
     width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    margin-left: var(--sidebar-width);
 }
-
-
-/* Page content */
 
 .page-content {
     padding: 32px;
 }
 
-
-/* ========================================
+/* =========================================================
    SIDEBAR
-   ======================================== */
+   ========================================================= */
 
 .sidebar {
-    width: var(--sidebar-width);
-    height: 100vh;
-
     position: fixed;
-
     top: 0;
     left: 0;
+
+    width: var(--sidebar-width);
+    height: 100vh;
 
     display: flex;
     flex-direction: column;
 
+    box-sizing: border-box;
     padding: 24px 16px;
 
-    box-sizing: border-box;
-
     background: rgba(255, 255, 255, 0.92);
-
     border-right: 1px solid var(--color-border);
 
     backdrop-filter: blur(20px);
@@ -62,10 +52,9 @@
     z-index: 1000;
 }
 
-
-/* ========================================
+/* =========================================================
    SIDEBAR BRAND
-   ======================================== */
+   ========================================================= */
 
 .sidebar-brand {
     display: flex;
@@ -74,7 +63,6 @@
     gap: 12px;
 
     padding: 8px 12px;
-
     margin-bottom: 40px;
 
     color: var(--color-text);
@@ -82,7 +70,6 @@
     font-size: 20px;
     font-weight: 700;
 }
-
 
 .brand-logo {
     width: 40px;
@@ -112,25 +99,20 @@
         box-shadow 0.25s ease;
 }
 
-
 .brand-logo:hover {
     transform: translateY(-2px) rotate(-3deg);
-
     box-shadow: var(--shadow-lg);
 }
 
-
-/* ========================================
+/* =========================================================
    SIDEBAR NAVIGATION
-   ======================================== */
+   ========================================================= */
 
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-
     gap: 6px;
 }
-
 
 .nav-item {
     position: relative;
@@ -145,7 +127,6 @@
     border-radius: var(--radius-md);
 
     color: var(--color-text-secondary);
-
     text-decoration: none;
 
     font-size: 15px;
@@ -157,15 +138,12 @@
         transform 0.2s ease;
 }
 
-
 .nav-item:hover {
     background: #f1f1ff;
-
     color: var(--color-primary);
 
     transform: translateX(4px);
 }
-
 
 .nav-item.active {
     background: linear-gradient(
@@ -175,20 +153,15 @@
     );
 
     color: var(--color-primary);
-
     font-weight: 600;
 
     box-shadow: var(--shadow-sm);
 }
 
-
-/* Active page indicator */
-
 .nav-item.active::before {
     content: "";
 
     position: absolute;
-
     left: 0;
     top: 50%;
 
@@ -202,10 +175,9 @@
     border-radius: 0 6px 6px 0;
 }
 
-
-/* ========================================
+/* =========================================================
    LOGOUT
-   ======================================== */
+   ========================================================= */
 
 .logout-button {
     margin-top: auto;
@@ -218,15 +190,14 @@
     padding: 12px 14px;
 
     border: none;
-
     border-radius: var(--radius-md);
 
     background: transparent;
 
     color: var(--color-text-secondary);
 
-    font-size: 15px;
     font-family: inherit;
+    font-size: 15px;
 
     cursor: pointer;
 
@@ -236,18 +207,16 @@
         transform 0.2s ease;
 }
 
-
 .logout-button:hover {
     background: #fef2f2;
-
     color: var(--color-danger);
 
     transform: translateX(4px);
 }
 
-/* ========================================
-   DASHBOARD
-   ======================================== */
+/* =========================================================
+   OLD / GENERIC DASHBOARD
+   ========================================================= */
 
 .dashboard {
     max-width: 1400px;
@@ -267,29 +236,20 @@
 
 .dashboard-header p {
     color: var(--color-text-secondary);
-
     font-size: 15px;
 }
 
-
-/* Summary cards */
-
 .summary-grid {
     display: grid;
-
     grid-template-columns: repeat(3, 1fr);
-
     gap: 20px;
 }
-
 
 .summary-card {
     padding: 24px;
 
     background: var(--color-surface);
-
     border: 1px solid var(--color-border);
-
     border-radius: var(--radius-lg);
 
     box-shadow: var(--shadow-sm);
@@ -299,31 +259,26 @@
         box-shadow 0.25s ease;
 }
 
-
 .summary-card:hover {
     transform: translateY(-4px);
-
     box-shadow: var(--shadow-md);
 }
-
 
 .summary-card p {
     margin-bottom: 12px;
 
     color: var(--color-text-secondary);
-
     font-size: 14px;
 }
-
 
 .summary-card h2 {
     font-size: 28px;
     font-weight: 700;
 }
 
-/* =========================
+/* =========================================================
    TRANSACTION MODAL
-   ========================= */
+   ========================================================= */
 
 .modal-overlay {
     position: fixed;
@@ -333,13 +288,13 @@
     align-items: center;
     justify-content: center;
 
+    padding: 20px;
+
     background: rgba(17, 24, 39, 0.35);
 
     backdrop-filter: blur(8px);
 
     z-index: 2000;
-
-    padding: 20px;
 }
 
 .transaction-form {
@@ -354,9 +309,7 @@
     padding: 32px;
 
     background: var(--color-surface);
-
     border: 1px solid var(--color-border);
-
     border-radius: var(--radius-xl);
 
     box-shadow: var(--shadow-lg);
@@ -368,13 +321,11 @@
     margin-bottom: 24px;
 
     color: var(--color-text);
-
     font-size: 24px;
 }
 
 .modal-close {
     position: absolute;
-
     top: 16px;
     right: 16px;
 
@@ -385,7 +336,6 @@
     border-radius: 50%;
 
     background: transparent;
-
     color: var(--color-text-secondary);
 
     font-size: 26px;
@@ -414,11 +364,19 @@
         transform: translateY(0) scale(1);
     }
 }
-/* ==================================================
-   DELETE CONFIRMATION MODAL
-   ================================================== */
 
-.delete-modal {
+/* =========================================================
+   DELETE CONFIRMATION MODAL
+   =========================================================
+   
+   NOTE:
+   There was previously another `.delete-modal` definition
+   earlier in the CSS. It conflicted with this modal.
+
+   Keep ONLY this version.
+   ========================================================= */
+
+.delete-modal-overlay {
     position: fixed;
     inset: 0;
 
@@ -428,77 +386,130 @@
 
     padding: 20px;
 
-    background: rgba(17, 24, 39, 0.35);
+    background: rgba(15, 23, 42, 0.45);
 
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
 
-    z-index: 2000;
+    z-index: 9999;
 
-    animation: modalAppear 0.25s ease;
+    animation: deleteModalOverlayIn 0.2s ease-out;
 }
 
-
-.delete-modal-card {
-    position: relative;
-
+.delete-modal {
     width: 100%;
-    max-width: 420px;
+    max-width: 430px;
 
-    padding: 32px;
+    box-sizing: border-box;
 
-    background: var(--color-surface);
+    padding: 30px;
 
-    border: 1px solid var(--color-border);
+    background: #ffffff;
 
-    border-radius: var(--radius-xl);
+    border: 1px solid #eeeaf7;
+    border-radius: 20px;
 
-    box-shadow: var(--shadow-lg);
+    box-shadow:
+        0 20px 50px rgba(30, 20, 60, 0.16),
+        0 8px 20px rgba(30, 20, 60, 0.08);
+
+    text-align: center;
+
+    animation: deleteModalIn 0.25s ease-out;
 }
 
+/* =========================================================
+   DELETE MODAL ICON
+   ========================================================= */
 
-.delete-modal-card h2 {
-    margin: 0 0 20px;
+.delete-modal-icon {
+    width: 58px;
+    height: 58px;
 
-    color: var(--color-text);
+    margin: 0 auto 18px;
 
-    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #fff1f2;
+    color: #ef4444;
+}
+
+/* =========================================================
+   DELETE MODAL TEXT
+   ========================================================= */
+
+.delete-modal h2 {
+    margin: 0;
+
+    color: #1f1b2d;
+
+    font-size: 22px;
     font-weight: 700;
+
+    line-height: 1.3;
 }
 
+.delete-modal > p {
+    margin: 12px 0 0;
 
-.delete-modal-card p {
-    margin: 0 0 12px;
+    color: #6f6a7d;
 
-    color: var(--color-text-secondary);
-
-    font-size: 15px;
-
-    line-height: 1.5;
+    font-size: 14px;
+    line-height: 1.6;
 }
 
-
-.delete-modal-card p strong {
-    color: var(--color-text);
+.delete-modal > p strong {
+    color: #2b2638;
+    font-weight: 600;
 }
 
+.delete-modal .delete-modal-warning {
+    margin-top: 8px;
+
+    color: #9a94a6;
+
+    font-size: 13px;
+}
+
+/* =========================================================
+   DELETE MODAL ERROR
+   ========================================================= */
+
+.delete-modal .form-error {
+    margin-top: 14px;
+    padding: 10px 12px;
+
+    border-radius: 8px;
+
+    background: #fff1f2;
+    color: #dc2626;
+
+    font-size: 13px;
+}
+
+/* =========================================================
+   DELETE MODAL BUTTONS
+   ========================================================= */
 
 .delete-modal-actions {
     display: flex;
-
     justify-content: flex-end;
-
     gap: 12px;
 
     margin-top: 28px;
 }
 
-
 .delete-modal-actions button {
-    padding: 10px 18px;
+    min-width: 105px;
+
+    padding: 11px 18px;
 
     border: none;
-
-    border-radius: var(--radius-md);
+    border-radius: 10px;
 
     font-family: inherit;
 
@@ -508,49 +519,93 @@
     cursor: pointer;
 
     transition:
-        background 0.2s ease,
-        transform 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease,
         opacity 0.2s ease;
 }
 
+/* Cancel */
 
 .delete-modal-actions button:first-child {
-    background: #f3f4f6;
-
-    color: var(--color-text);
+    background: #f5f3f8;
+    color: #5f596b;
 }
-
 
 .delete-modal-actions button:first-child:hover {
-    background: #e5e7eb;
+    background: #ebe8f1;
+    color: #332e40;
 }
 
-
-.delete-modal-actions button:last-child {
-    background: var(--color-danger);
-
-    color: white;
+.delete-modal-actions button:first-child:active {
+    transform: scale(0.97);
 }
 
+/* Delete */
 
-.delete-modal-actions button:last-child:hover {
+.delete-modal-actions .delete-confirm-button {
+    background: #ef4444;
+    color: #ffffff;
+
+    box-shadow:
+        0 4px 10px rgba(239, 68, 68, 0.18);
+}
+
+.delete-modal-actions .delete-confirm-button:hover {
+    background: #dc2626;
+
+    box-shadow:
+        0 6px 14px rgba(239, 68, 68, 0.24);
+
     transform: translateY(-1px);
-
-    opacity: 0.9;
 }
 
+.delete-modal-actions .delete-confirm-button:active {
+    transform: scale(0.97);
+}
+
+/* Disabled */
 
 .delete-modal-actions button:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
 
     cursor: not-allowed;
 
     transform: none;
+
+    box-shadow: none;
 }
 
-/* =========================================
+/* =========================================================
+   DELETE MODAL ANIMATIONS
+   ========================================================= */
+
+@keyframes deleteModalOverlayIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes deleteModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* =========================================================
    AUTH PAGE
-   ========================================= */
+   ========================================================= */
 
 .auth-page {
     min-height: 100vh;
@@ -564,10 +619,9 @@
     background: #f3f4f6;
 }
 
-
-/* =========================================
+/* =========================================================
    AUTH CONTAINER
-   ========================================= */
+   ========================================================= */
 
 .auth-container {
     position: relative;
@@ -584,20 +638,18 @@
 
     border-radius: 18px;
 
+    border: 1px solid #e5e7eb;
+
     box-shadow:
         0 20px 50px rgba(0, 0, 0, 0.15);
-
-    border: 1px solid #e5e7eb;
 }
 
-
-/* =========================================
-   FORM PANELS
-   ========================================= */
+/* =========================================================
+   AUTH FORM PANELS
+   ========================================================= */
 
 .auth-form-panel {
     position: absolute;
-
     top: 0;
 
     width: 50%;
@@ -609,6 +661,8 @@
 
     padding: 40px;
 
+    box-sizing: border-box;
+
     background: white;
 
     transition:
@@ -616,24 +670,19 @@
         opacity 0.6s ease;
 }
 
-
 .login-panel {
     left: 0;
-
     z-index: 2;
 }
 
-
 .signup-panel {
     right: 0;
-
     z-index: 1;
 }
 
-
-/* =========================================
-   FORM CONTENT
-   ========================================= */
+/* =========================================================
+   AUTH FORM CONTENT
+   ========================================================= */
 
 .auth-form-content {
     width: 100%;
@@ -642,16 +691,14 @@
     text-align: center;
 }
 
-
 .auth-form-content h1 {
     margin-bottom: 10px;
 
+    color: #111827;
+
     font-size: 32px;
     font-weight: 700;
-
-    color: #111827;
 }
-
 
 .auth-subtitle {
     margin-bottom: 28px;
@@ -661,25 +708,22 @@
     font-size: 14px;
 }
 
-
-/* =========================================
-   INPUTS
-   ========================================= */
+/* =========================================================
+   AUTH INPUTS
+   ========================================================= */
 
 .auth-input {
     margin-bottom: 14px;
 }
 
-
 .auth-input input {
     width: 100%;
 
-    padding: 13px 16px;
-
     box-sizing: border-box;
 
-    border: 1px solid #e5e7eb;
+    padding: 13px 16px;
 
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
 
     background: #f3f4f6;
@@ -694,17 +738,14 @@
         background 0.2s ease;
 }
 
-
 .auth-input input:focus {
     border-color: var(--color-primary);
-
     background: white;
 }
 
-
-/* =========================================
-   BUTTON
-   ========================================= */
+/* =========================================================
+   AUTH SUBMIT
+   ========================================================= */
 
 .auth-submit {
     width: 100%;
@@ -714,7 +755,6 @@
     padding: 13px 20px;
 
     border: none;
-
     border-radius: 999px;
 
     background: var(--color-primary);
@@ -734,70 +774,54 @@
         opacity 0.2s ease;
 }
 
-
 .auth-submit:hover {
     transform: translateY(-2px);
-
     box-shadow: var(--shadow-md);
 }
 
-
 .auth-submit:disabled {
     opacity: 0.6;
-
     cursor: not-allowed;
-
     transform: none;
 }
 
-
-/* =========================================
-   ERROR
-   ========================================= */
+/* =========================================================
+   AUTH ERROR
+   ========================================================= */
 
 .auth-error {
     margin-bottom: 16px;
-
     padding: 10px 12px;
 
     border-radius: 8px;
 
     background: #fef2f2;
-
     color: var(--color-danger);
 
     font-size: 13px;
 }
 
-
-/* =========================================
-   OVERLAY
-   ========================================= */
+/* =========================================================
+   AUTH OVERLAY
+   ========================================================= */
 
 .auth-overlay {
     position: absolute;
-
     top: 0;
     right: 0;
 
     width: 50%;
     height: 100%;
 
-    z-index: 5;
-
     overflow: hidden;
 
-    background: var(--color-primary);
+    z-index: 5;
 
+    background: var(--color-primary);
     color: white;
 
     transition: transform 0.6s ease;
 }
-
-
-/* =========================================
-   OVERLAY CONTENT
-   ========================================= */
 
 .auth-overlay-panel {
     width: 100%;
@@ -805,17 +829,15 @@
 
     display: flex;
     flex-direction: column;
-
     align-items: center;
     justify-content: center;
 
-    padding: 50px;
-
     box-sizing: border-box;
+
+    padding: 50px;
 
     text-align: center;
 }
-
 
 .auth-overlay-panel h1 {
     margin-bottom: 16px;
@@ -823,7 +845,6 @@
     font-size: 32px;
     font-weight: 700;
 }
-
 
 .auth-overlay-panel p {
     max-width: 280px;
@@ -833,14 +854,12 @@
     color: rgba(255, 255, 255, 0.9);
 
     font-size: 14px;
-
     line-height: 1.6;
 }
 
-
-/* =========================================
-   OUTLINE BUTTON
-   ========================================= */
+/* =========================================================
+   AUTH OUTLINE BUTTON
+   ========================================================= */
 
 .auth-outline-button {
     min-width: 130px;
@@ -848,11 +867,9 @@
     padding: 11px 24px;
 
     border: 1px solid white;
-
     border-radius: 999px;
 
     background: transparent;
-
     color: white;
 
     font-family: inherit;
@@ -867,22 +884,18 @@
         color 0.2s ease;
 }
 
-
 .auth-outline-button:hover {
     background: white;
-
     color: var(--color-primary);
 }
 
-
-/* =========================================
-   SIGNUP MODE
-   ========================================= */
+/* =========================================================
+   AUTH SIGNUP MODE
+   ========================================================= */
 
 .auth-page.signup-mode .auth-overlay {
     transform: translateX(-100%);
 }
-
 
 .auth-page.signup-mode .login-panel {
     transform: translateX(100%);
@@ -892,129 +905,15 @@
     pointer-events: none;
 }
 
-
 .auth-page.signup-mode .signup-panel {
     transform: translateX(0);
 
     z-index: 2;
 }
 
-
-/* =========================================
-   MOBILE
-   ========================================= */
-
-@media (max-width: 700px) {
-
-    .auth-page {
-        padding: 16px;
-    }
-
-    .auth-container {
-        min-height: auto;
-
-        flex-direction: column;
-    }
-
-    .auth-form-panel {
-        position: relative;
-
-        width: 100%;
-
-        min-height: 500px;
-
-        padding: 32px;
-    }
-
-    .login-panel {
-        display: none;
-    }
-
-    .signup-panel {
-        display: flex;
-    }
-
-    .auth-overlay {
-        display: none;
-    }
-
-    .auth-page:not(.signup-mode) .login-panel {
-        display: flex;
-    }
-
-    .auth-page.signup-mode .signup-panel {
-        display: flex;
-    }
-}
-
-
-/* ========================================
-   DELETE MODAL ACTIONS
-   ======================================== */
-
-.delete-modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-
-    margin-top: 28px;
-}
-
-.delete-modal-actions button {
-    padding: 11px 18px;
-
-    border: none;
-    border-radius: var(--radius-md);
-
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 600;
-
-    cursor: pointer;
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        opacity 0.2s ease;
-}
-
-.delete-modal-actions button:first-child {
-    background: #f3f4f6;
-
-    color: var(--color-text);
-}
-
-.delete-modal-actions button:first-child:hover {
-    background: #e5e7eb;
-
-    transform: translateY(-1px);
-}
-
-.delete-modal-actions button:last-child {
-    background: var(--color-danger);
-
-    color: white;
-
-    box-shadow: var(--shadow-sm);
-}
-
-.delete-modal-actions button:last-child:hover {
-    transform: translateY(-1px);
-
-    box-shadow: var(--shadow-md);
-}
-
-.delete-modal-actions button:disabled {
-    opacity: 0.6;
-
-    cursor: not-allowed;
-
-    transform: none;
-}
-
-/* ========================================
+/* =========================================================
    PROFILE
-   ======================================== */
+   ========================================================= */
 
 .profile-page {
     max-width: 900px;
@@ -1034,7 +933,6 @@
 
 .profile-header p {
     color: var(--color-text-secondary);
-
     font-size: 15px;
 }
 
@@ -1046,7 +944,6 @@
     background: var(--color-surface);
 
     border: 1px solid var(--color-border);
-
     border-radius: var(--radius-lg);
 
     box-shadow: var(--shadow-sm);
@@ -1082,16 +979,14 @@
 .profile-card input {
     width: 100%;
 
-    padding: 11px 13px;
-
     box-sizing: border-box;
 
-    border: 1px solid var(--color-border);
+    padding: 11px 13px;
 
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
 
     background: var(--color-surface);
-
     color: var(--color-text);
 
     font-family: inherit;
@@ -1107,18 +1002,17 @@
 .profile-card input:focus {
     border-color: var(--color-primary);
 
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow:
+        0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .profile-card form button {
     padding: 11px 18px;
 
     border: none;
-
     border-radius: var(--radius-md);
 
     background: var(--color-primary);
-
     color: white;
 
     font-family: inherit;
@@ -1135,28 +1029,914 @@
 
 .profile-card form button:hover {
     transform: translateY(-1px);
-
     box-shadow: var(--shadow-md);
 }
 
 .profile-card form button:disabled {
     opacity: 0.6;
-
     cursor: not-allowed;
-
     transform: none;
 }
 
 .form-success {
     margin-bottom: 18px;
-
     padding: 10px 12px;
 
     border-radius: var(--radius-md);
 
     background: #ecfdf5;
-
     color: #047857;
 
     font-size: 14px;
+}
+
+/* =========================================================
+   NEW DASHBOARD
+   ========================================================= */
+
+.dashboard-new {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* =========================================================
+   DASHBOARD HEADER
+   ========================================================= */
+
+.dashboard-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    margin-bottom: 28px;
+}
+
+.dashboard-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--color-primary);
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 1.4px;
+}
+
+.dashboard-top h1 {
+    margin: 0 0 7px;
+
+    color: var(--color-text);
+
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.dashboard-top p {
+    margin: 0;
+
+    color: var(--color-text-secondary);
+
+    font-size: 14px;
+}
+
+/* =========================================================
+   DASHBOARD ADD BUTTON
+   ========================================================= */
+
+.dashboard-add-button {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 11px 17px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: linear-gradient(
+        135deg,
+        var(--color-primary),
+        #8b5cf6
+    );
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 7px 18px rgba(124, 58, 237, 0.2);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.dashboard-add-button:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 24px rgba(124, 58, 237, 0.28);
+}
+
+/* =========================================================
+   DASHBOARD SUMMARY
+   ========================================================= */
+
+.dashboard-summary-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 22px;
+}
+
+.dashboard-summary-card {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+
+    min-height: 120px;
+
+    padding: 22px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+
+    background: var(--color-surface);
+
+    box-shadow: var(--shadow-sm);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.dashboard-summary-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.dashboard-summary-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 100px;
+    height: 100px;
+
+    right: -40px;
+    bottom: -50px;
+
+    border-radius: 50%;
+
+    opacity: 0.08;
+}
+
+.balance-summary::after {
+    background: var(--color-primary);
+}
+
+.income-summary::after {
+    background: #7c3aed;
+}
+
+.expense-summary::after {
+    background: #f97316;
+}
+
+.summary-icon {
+    width: 46px;
+    height: 46px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+
+    background: #f0ebff;
+
+    color: var(--color-primary);
+}
+
+.income-summary .summary-icon {
+    background: #f0ebff;
+    color: #7c3aed;
+}
+
+.expense-summary .summary-icon {
+    background: #fff0e8;
+    color: #f97316;
+}
+
+.dashboard-summary-card span {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--color-text-secondary);
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+.dashboard-summary-card h2 {
+    margin: 0;
+
+    color: var(--color-text);
+
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* =========================================================
+   STATISTICS CARD
+   ========================================================= */
+
+.statistics-card {
+    padding: 25px;
+    margin-bottom: 22px;
+
+    background: var(--color-surface);
+
+    border: 1px solid var(--color-border);
+    border-radius: 22px;
+
+    box-shadow: var(--shadow-sm);
+}
+
+.statistics-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    margin-bottom: 8px;
+}
+
+.statistics-small-title {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--color-primary);
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 1.3px;
+}
+
+.statistics-header h2 {
+    margin: 0 0 4px;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.statistics-header p {
+    margin: 0;
+
+    color: var(--color-text-secondary);
+
+    font-size: 12px;
+}
+
+/* =========================================================
+   STATISTICS FILTERS
+   ========================================================= */
+
+.statistics-filters {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+.month-selector {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+.month-selector select {
+    appearance: none;
+
+    padding: 9px 32px 9px 12px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+
+    outline: none;
+
+    background: #f7f5fb;
+
+    color: #444052;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.month-selector select:focus {
+    border-color: var(--color-primary);
+
+    box-shadow:
+        0 0 0 3px rgba(124, 58, 237, 0.08);
+}
+
+.month-selector svg {
+    position: absolute;
+
+    right: 9px;
+
+    pointer-events: none;
+
+    color: #777;
+}
+
+/* =========================================================
+   DASHBOARD CHART
+   ========================================================= */
+
+.dashboard-chart {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+
+    gap: 25px;
+
+    margin-top: -2px;
+
+    color: var(--color-text-secondary);
+
+    font-size: 12px;
+}
+
+.chart-legend > div {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+}
+
+.income-dot {
+    background: #7c3aed;
+}
+
+.expense-dot {
+    background: #f97316;
+}
+
+/* =========================================================
+   DASHBOARD TRANSACTIONS CARD
+   ========================================================= */
+
+.dashboard-transactions-card {
+    padding: 25px;
+
+    background: var(--color-surface);
+
+    border: 1px solid var(--color-border);
+    border-radius: 22px;
+
+    box-shadow: var(--shadow-sm);
+}
+
+.transactions-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+}
+
+.transactions-header h2 {
+    margin: 0 0 5px;
+
+    font-size: 20px;
+}
+
+.transactions-header p {
+    margin: 0;
+
+    color: var(--color-text-secondary);
+
+    font-size: 13px;
+}
+
+.view-all-button {
+    border: none;
+
+    background: transparent;
+
+    color: var(--color-primary);
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   TRANSACTION TYPE TOGGLE
+   ========================================================= */
+
+.transaction-toggle {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 4px;
+
+    width: 270px;
+
+    padding: 4px;
+    margin-bottom: 18px;
+
+    border-radius: 11px;
+
+    background: #f5f3fa;
+}
+
+.transaction-toggle button {
+    padding: 9px 15px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: var(--color-text-secondary);
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.transaction-toggle button.active {
+    background: white;
+
+    color: var(--color-primary);
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+/* =========================================================
+   DASHBOARD TRANSACTION LIST
+   ========================================================= */
+
+.dashboard-transaction-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-transaction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 15px 3px;
+
+    border-bottom: 1px solid #f0eef4;
+}
+
+.dashboard-transaction-item:last-child {
+    border-bottom: none;
+}
+
+/* =========================================================
+   TRANSACTION INFO
+   ========================================================= */
+
+.transaction-info {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    min-width: 0;
+}
+
+.transaction-icon {
+    width: 40px;
+    height: 40px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+}
+
+.income-transaction-icon {
+    background: #f0ebff;
+    color: #7c3aed;
+}
+
+.expense-transaction-icon {
+    background: #fff0e8;
+    color: #f97316;
+}
+
+.transaction-info h3 {
+    margin: 0 0 4px;
+
+    color: var(--color-text);
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.transaction-info p {
+    margin: 0;
+
+    color: var(--color-text-secondary);
+
+    font-size: 11px;
+}
+
+/* =========================================================
+   TRANSACTION RIGHT SIDE
+   ========================================================= */
+
+.transaction-right {
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+}
+
+.transaction-right strong {
+    font-size: 13px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.income-amount {
+    color: #7c3aed;
+}
+
+.expense-amount {
+    color: #f97316;
+}
+
+/* =========================================================
+   TRANSACTION ACTION BUTTONS
+   ========================================================= */
+
+.transaction-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+}
+
+.transaction-actions button {
+    width: 31px;
+    height: 31px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: var(--color-text-secondary);
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.transaction-actions button:hover {
+    background: #f3f0ff;
+    color: var(--color-primary);
+}
+
+.transaction-actions button:last-child:hover {
+    background: #fff0f0;
+    color: var(--color-danger);
+}
+
+/* =========================================================
+   DASHBOARD EMPTY STATE
+   ========================================================= */
+
+.dashboard-empty {
+    padding: 35px 15px;
+
+    text-align: center;
+}
+
+.dashboard-empty p {
+    margin-bottom: 12px;
+
+    color: var(--color-text-secondary);
+
+    font-size: 13px;
+}
+
+.dashboard-empty button {
+    padding: 9px 15px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: var(--color-primary);
+
+    color: white;
+
+    font-family: inherit;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   DASHBOARD LOADING / ERROR
+   ========================================================= */
+
+.dashboard-loading,
+.dashboard-error {
+    min-height: 60vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dashboard-loading-card,
+.dashboard-error-card {
+    padding: 30px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 18px;
+
+    background: var(--color-surface);
+
+    box-shadow: var(--shadow-md);
+
+    text-align: center;
+}
+
+.dashboard-error-card h2 {
+    margin-bottom: 8px;
+}
+
+.dashboard-error-card p {
+    margin-bottom: 18px;
+
+    color: var(--color-danger);
+}
+
+.dashboard-error-card button {
+    padding: 9px 18px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: var(--color-primary);
+
+    color: white;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   DASHBOARD REFRESH INDICATOR
+   ========================================================= */
+
+.dashboard-refreshing {
+    margin-top: 14px;
+
+    color: var(--color-text-secondary);
+
+    font-size: 12px;
+
+    text-align: center;
+}
+
+/* =========================================================
+   RESPONSIVE - DASHBOARD
+   ========================================================= */
+
+@media (max-width: 900px) {
+    .dashboard-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-top {
+        align-items: flex-start;
+        flex-direction: column;
+
+        gap: 18px;
+    }
+
+    .dashboard-add-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard-new {
+        width: 100%;
+    }
+
+    .statistics-card,
+    .dashboard-transactions-card {
+        padding: 18px;
+        border-radius: 17px;
+    }
+
+    .statistics-header {
+        gap: 12px;
+    }
+
+    .statistics-filters {
+        width: 100%;
+    }
+
+    .month-selector {
+        flex: 1;
+    }
+
+    .month-selector select {
+        width: 100%;
+    }
+
+    .dashboard-summary-card {
+        min-height: 100px;
+        padding: 18px;
+    }
+
+    .dashboard-summary-card h2 {
+        font-size: 21px;
+    }
+
+    .transaction-toggle {
+        width: 100%;
+    }
+
+    .dashboard-transaction-item {
+        align-items: flex-start;
+
+        gap: 10px;
+    }
+
+    .transaction-right {
+        align-items: flex-end;
+        flex-direction: column;
+
+        gap: 7px;
+    }
+
+    .transaction-info p {
+        max-width: 150px;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE - DELETE MODAL
+   ========================================================= */
+
+@media (max-width: 480px) {
+    .delete-modal-overlay {
+        padding: 16px;
+    }
+
+    .delete-modal {
+        max-width: 100%;
+
+        padding: 24px 20px;
+
+        border-radius: 18px;
+    }
+
+    .delete-modal-icon {
+        width: 52px;
+        height: 52px;
+
+        margin-bottom: 16px;
+    }
+
+    .delete-modal h2 {
+        font-size: 20px;
+    }
+
+    .delete-modal > p {
+        font-size: 13px;
+    }
+
+    .delete-modal-actions {
+        flex-direction: column-reverse;
+
+        gap: 10px;
+
+        margin-top: 24px;
+    }
+
+    .delete-modal-actions button {
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE - AUTH
+   ========================================================= */
+
+@media (max-width: 700px) {
+    .auth-page {
+        padding: 16px;
+    }
+
+    .auth-container {
+        min-height: auto;
+        flex-direction: column;
+    }
+
+    .auth-form-panel {
+        position: relative;
+
+        width: 100%;
+        min-height: 500px;
+
+        padding: 32px;
+    }
+
+    .login-panel {
+        display: none;
+    }
+
+    .signup-panel {
+        display: flex;
+    }
+
+    .auth-overlay {
+        display: none;
+    }
+
+    .auth-page:not(.signup-mode) .login-panel {
+        display: flex;
+    }
+
+    .auth-page.signup-mode .signup-panel {
+        display: flex;
+    }
 }
