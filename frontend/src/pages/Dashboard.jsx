@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-} from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 
 import { useNavigate } from "react-router-dom";
 
@@ -43,19 +38,14 @@ function Dashboard() {
   const [error, setError] = useState("");
 
   const [selectedMonth, setSelectedMonth] = useState(
-    `${now.getFullYear()}-${String(
-      now.getMonth() + 1,
-    ).padStart(2, "0")}`,
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
   );
 
-  const [transactionType, setTransactionType] =
-    useState("expense");
+  const [transactionType, setTransactionType] = useState("expense");
 
-  const [showDeleteModal, setShowDeleteModal] =
-    useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [transactionToDelete, setTransactionToDelete] =
-    useState(null);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
 
   const [deleting, setDeleting] = useState(false);
 
@@ -77,44 +67,36 @@ function Dashboard() {
   // Load Dashboard
   // ==================================================
 
-  const loadDashboard = useCallback(
-    async (showLoader = false) => {
-      try {
-        setError("");
+  const loadDashboard = useCallback(async (showLoader = false) => {
+    try {
+      setError("");
 
-        if (showLoader) {
-          setLoading(true);
-        } else {
-          setRefreshing(true);
-        }
-
-        const token = localStorage.getItem("token");
-
-        const [
-          summaryData,
-          transactionData,
-        ] = await Promise.all([
-          getDashboardSummary(token),
-
-          apiRequest("/transactions", {
-            cache: "no-store",
-          }),
-        ]);
-
-        setSummary(summaryData.summary);
-
-        setTransactions(
-          transactionData.transactions || [],
-        );
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
+      if (showLoader) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
       }
-    },
-    [],
-  );
+
+      const token = localStorage.getItem("token");
+
+      const [summaryData, transactionData] = await Promise.all([
+        getDashboardSummary(token),
+
+        apiRequest("/transactions", {
+          cache: "no-store",
+        }),
+      ]);
+
+      setSummary(summaryData.summary);
+
+      setTransactions(transactionData.transactions || []);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   // ==================================================
   // Initial Dashboard Load
@@ -156,9 +138,7 @@ function Dashboard() {
     }
 
     function handleVisibilityChange() {
-      if (
-        document.visibilityState === "visible"
-      ) {
+      if (document.visibilityState === "visible") {
         loadDashboard(false);
       }
     }
@@ -167,15 +147,9 @@ function Dashboard() {
       loadDashboard(false);
     }
 
-    window.addEventListener(
-      "focus",
-      handleFocus,
-    );
+    window.addEventListener("focus", handleFocus);
 
-    window.addEventListener(
-      "pageshow",
-      handlePageShow,
-    );
+    window.addEventListener("pageshow", handlePageShow);
 
     document.addEventListener(
       "visibilitychange",
@@ -183,15 +157,9 @@ function Dashboard() {
     );
 
     return () => {
-      window.removeEventListener(
-        "focus",
-        handleFocus,
-      );
+      window.removeEventListener("focus", handleFocus);
 
-      window.removeEventListener(
-        "pageshow",
-        handlePageShow,
-      );
+      window.removeEventListener("pageshow", handlePageShow);
 
       document.removeEventListener(
         "visibilitychange",
@@ -204,13 +172,9 @@ function Dashboard() {
   // Selected Month
   // ==================================================
 
-  const selectedYear = Number(
-    selectedMonth.split("-")[0],
-  );
+  const selectedYear = Number(selectedMonth.split("-")[0]);
 
-  const selectedMonthNumber = Number(
-    selectedMonth.split("-")[1],
-  );
+  const selectedMonthNumber = Number(selectedMonth.split("-")[1]);
 
   const monthName = new Date(
     selectedYear,
@@ -230,29 +194,18 @@ function Dashboard() {
         return false;
       }
 
-      const transactionDate =
-        new Date(transaction.date);
+      const transactionDate = new Date(transaction.date);
 
-      if (
-        Number.isNaN(
-          transactionDate.getTime(),
-        )
-      ) {
+      if (Number.isNaN(transactionDate.getTime())) {
         return false;
       }
 
       return (
-        transactionDate.getFullYear() ===
-          selectedYear &&
-        transactionDate.getMonth() + 1 ===
-          selectedMonthNumber
+        transactionDate.getFullYear() === selectedYear &&
+        transactionDate.getMonth() + 1 === selectedMonthNumber
       );
     });
-  }, [
-    transactions,
-    selectedYear,
-    selectedMonthNumber,
-  ]);
+  }, [transactions, selectedYear, selectedMonthNumber]);
 
   // ==================================================
   // Weekly Chart Data
@@ -265,17 +218,11 @@ function Dashboard() {
       0,
     ).getDate();
 
-    const numberOfWeeks = Math.ceil(
-      daysInMonth / 7,
-    );
+    const numberOfWeeks = Math.ceil(daysInMonth / 7);
 
     const weeks = [];
 
-    for (
-      let i = 0;
-      i < numberOfWeeks;
-      i++
-    ) {
+    for (let i = 0; i < numberOfWeeks; i++) {
       weeks.push({
         week: `Week ${i + 1}`,
         income: 0,
@@ -283,64 +230,39 @@ function Dashboard() {
       });
     }
 
-    monthlyTransactions.forEach(
-      (transaction) => {
-        if (!transaction.date) {
-          return;
-        }
+    monthlyTransactions.forEach((transaction) => {
+      if (!transaction.date) {
+        return;
+      }
 
-        const transactionDate =
-          new Date(transaction.date);
+      const transactionDate = new Date(transaction.date);
 
-        const day =
-          transactionDate.getDate();
+      const day = transactionDate.getDate();
 
-        const weekIndex = Math.floor(
-          (day - 1) / 7,
-        );
+      const weekIndex = Math.floor((day - 1) / 7);
 
-        if (!weeks[weekIndex]) {
-          return;
-        }
+      if (!weeks[weekIndex]) {
+        return;
+      }
 
-        const amount = Number(
-          transaction.amount || 0,
-        );
+      const amount = Number(transaction.amount || 0);
 
-        if (
-          !Number.isFinite(amount) ||
-          amount <= 0
-        ) {
-          return;
-        }
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return;
+      }
 
-        if (
-          transaction.type === "income"
-        ) {
-          weeks[weekIndex].income +=
-            amount;
-        } else {
-          weeks[weekIndex].expense +=
-            amount;
-        }
-      },
-    );
+      if (transaction.type === "income") {
+        weeks[weekIndex].income += amount;
+      } else {
+        weeks[weekIndex].expense += amount;
+      }
+    });
 
     return weeks;
-  }, [
-    monthlyTransactions,
-    selectedYear,
-    selectedMonthNumber,
-  ]);
+  }, [monthlyTransactions, selectedYear, selectedMonthNumber]);
 
   // ==================================================
   // Chart Display Data
-  //
-  // IMPORTANT:
-  // This comes AFTER weeklyChartData.
-  //
-  // We use logarithmic values only for drawing
-  // the bars. Original amounts remain untouched.
   // ==================================================
 
   const chartDisplayData = useMemo(() => {
@@ -348,14 +270,10 @@ function Dashboard() {
       ...week,
 
       incomeDisplay:
-        week.income > 0
-          ? Math.log10(week.income + 1)
-          : 0,
+        week.income > 0 ? Math.log10(week.income + 1) : 0,
 
       expenseDisplay:
-        week.expense > 0
-          ? Math.log10(week.expense + 1)
-          : 0,
+        week.expense > 0 ? Math.log10(week.expense + 1) : 0,
     }));
   }, [weeklyChartData]);
 
@@ -366,28 +284,17 @@ function Dashboard() {
   const displayedTransactions = useMemo(() => {
     return monthlyTransactions
       .filter(
-        (transaction) =>
-          transaction.type ===
-          transactionType,
+        (transaction) => transaction.type === transactionType,
       )
-      .sort(
-        (a, b) =>
-          new Date(b.date) -
-          new Date(a.date),
-      )
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 5);
-  }, [
-    monthlyTransactions,
-    transactionType,
-  ]);
+  }, [monthlyTransactions, transactionType]);
 
   // ==================================================
   // Delete Transaction
   // ==================================================
 
-  function handleDeleteTransaction(
-    transaction,
-  ) {
+  function handleDeleteTransaction(transaction) {
     setError("");
 
     setTransactionToDelete(transaction);
@@ -416,14 +323,12 @@ function Dashboard() {
   // ==================================================
 
   async function confirmDeleteTransaction() {
-    if (
-      !transactionToDelete ||
-      deleting
-    ) {
+    if (!transactionToDelete || deleting) {
       return;
     }
 
     setDeleting(true);
+
     setError("");
 
     try {
@@ -435,21 +340,17 @@ function Dashboard() {
       );
 
       // Remove immediately from state
-      setTransactions(
-        (previousTransactions) =>
-          previousTransactions.filter(
-            (transaction) =>
-              transaction._id !==
-              transactionToDelete._id,
-          ),
+      setTransactions((previousTransactions) =>
+        previousTransactions.filter(
+          (transaction) =>
+            transaction._id !== transactionToDelete._id,
+        ),
       );
 
       // Refresh summary
-      const token =
-        localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
-      const summaryData =
-        await getDashboardSummary(token);
+      const summaryData = await getDashboardSummary(token);
 
       setSummary(summaryData.summary);
 
@@ -459,9 +360,7 @@ function Dashboard() {
       setTransactionToDelete(null);
 
       // Notify other components
-      window.dispatchEvent(
-        new Event("transactionsUpdated"),
-      );
+      window.dispatchEvent(new Event("transactionsUpdated"));
     } catch (error) {
       setError(error.message);
     } finally {
@@ -473,51 +372,255 @@ function Dashboard() {
   // Edit Transaction
   // ==================================================
 
-  function handleEditTransaction(
-    transactionId,
-  ) {
-    navigate(
-      `/transactions?edit=${transactionId}`,
-    );
+  function handleEditTransaction(transactionId) {
+    navigate(`/transactions?edit=${transactionId}`);
   }
 
   // ==================================================
-  // Loading
+  // LOADING SKELETON
+  //
+  // IMPORTANT:
+  // The skeleton uses the SAME dashboard structure
+  // as the real page.
   // ==================================================
 
   if (loading) {
     return (
-      <div className="dashboard-loading">
-        <div className="dashboard-loading-card">
-          Loading your dashboard...
+      <div className="dashboard-new dashboard-skeleton-page">
+
+        {/* ==========================================
+            HEADER SKELETON
+            ========================================== */}
+
+        <div className="dashboard-top">
+
+          <div className="dashboard-header-skeleton-content">
+
+            <div className="skeleton-text dashboard-skeleton-label" />
+
+            <div className="skeleton-text dashboard-skeleton-title" />
+
+            <div className="skeleton-text dashboard-skeleton-description" />
+
+          </div>
+
+          <div className="dashboard-skeleton-add-button" />
+
         </div>
+
+        {/* ==========================================
+            SUMMARY SKELETON
+            ========================================== */}
+
+        <div className="dashboard-summary-grid">
+
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div
+              key={index}
+              className="dashboard-summary-card dashboard-summary-skeleton"
+            >
+              <div className="dashboard-summary-skeleton-icon" />
+
+              <div className="dashboard-summary-skeleton-content">
+
+                <div className="skeleton-text dashboard-summary-skeleton-label" />
+
+                <div className="skeleton-text dashboard-summary-skeleton-value" />
+
+              </div>
+            </div>
+          ))}
+
+        </div>
+
+        {/* ==========================================
+            STATISTICS SKELETON
+            ========================================== */}
+
+        <section className="statistics-card dashboard-statistics-skeleton">
+
+          <div className="statistics-header">
+
+            <div className="dashboard-statistics-heading-skeleton">
+
+              <div className="skeleton-text dashboard-statistics-small-title" />
+
+              <div className="skeleton-text dashboard-statistics-title" />
+
+              <div className="skeleton-text dashboard-statistics-description" />
+
+            </div>
+
+            <div className="statistics-filters">
+
+              <div className="dashboard-skeleton-selector" />
+
+              <div className="dashboard-skeleton-selector" />
+
+            </div>
+
+          </div>
+
+          {/* Same 300px chart area as actual dashboard */}
+
+          <div className="dashboard-chart dashboard-chart-skeleton">
+
+            <div className="dashboard-chart-skeleton-grid">
+
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+
+            </div>
+
+            <div className="dashboard-chart-skeleton-bars">
+
+              <div className="dashboard-chart-skeleton-group">
+                <div className="dashboard-chart-skeleton-bar bar-short" />
+                <div className="dashboard-chart-skeleton-bar bar-medium" />
+              </div>
+
+              <div className="dashboard-chart-skeleton-group">
+                <div className="dashboard-chart-skeleton-bar bar-tall" />
+                <div className="dashboard-chart-skeleton-bar bar-short" />
+              </div>
+
+              <div className="dashboard-chart-skeleton-group">
+                <div className="dashboard-chart-skeleton-bar bar-medium" />
+                <div className="dashboard-chart-skeleton-bar bar-tall" />
+              </div>
+
+              <div className="dashboard-chart-skeleton-group">
+                <div className="dashboard-chart-skeleton-bar bar-short" />
+                <div className="dashboard-chart-skeleton-bar bar-medium" />
+              </div>
+
+              <div className="dashboard-chart-skeleton-group">
+                <div className="dashboard-chart-skeleton-bar bar-tall" />
+                <div className="dashboard-chart-skeleton-bar bar-medium" />
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Same legend position */}
+
+          <div className="chart-legend">
+
+            <div className="dashboard-skeleton-legend-item">
+              <span className="dashboard-skeleton-legend-dot" />
+              <span className="skeleton-text dashboard-skeleton-legend-text" />
+            </div>
+
+            <div className="dashboard-skeleton-legend-item">
+              <span className="dashboard-skeleton-legend-dot" />
+              <span className="skeleton-text dashboard-skeleton-legend-text" />
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* ==========================================
+            TRANSACTIONS SKELETON
+            ========================================== */}
+
+        <section className="dashboard-transactions-card dashboard-transactions-skeleton">
+
+          <div className="transactions-header">
+
+            <div className="dashboard-transactions-heading-skeleton">
+
+              <div className="skeleton-text dashboard-statistics-small-title" />
+
+              <div className="skeleton-text dashboard-transactions-title" />
+
+              <div className="skeleton-text dashboard-transactions-description" />
+
+            </div>
+
+            <div className="skeleton-text dashboard-skeleton-view-all" />
+
+          </div>
+
+          {/* Same toggle size */}
+
+          <div className="transaction-toggle dashboard-toggle-skeleton">
+
+            <div className="dashboard-toggle-button-skeleton" />
+
+            <div className="dashboard-toggle-button-skeleton" />
+
+          </div>
+
+          {/* Same transaction rows */}
+
+          <div className="dashboard-transaction-list">
+
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div
+                key={index}
+                className="dashboard-transaction-item dashboard-transaction-skeleton-item"
+              >
+
+                <div className="transaction-info">
+
+                  <div className="transaction-icon dashboard-transaction-skeleton-icon" />
+
+                  <div className="dashboard-transaction-skeleton-details">
+
+                    <div className="skeleton-text dashboard-transaction-skeleton-title" />
+
+                    <div className="skeleton-text dashboard-transaction-skeleton-meta" />
+
+                  </div>
+
+                </div>
+
+                <div className="transaction-right">
+
+                  <div className="skeleton-text dashboard-transaction-skeleton-amount" />
+
+                  <div className="dashboard-transaction-skeleton-actions">
+
+                    <div className="dashboard-transaction-skeleton-action" />
+
+                    <div className="dashboard-transaction-skeleton-action" />
+
+                  </div>
+
+                </div>
+
+              </div>
+            ))}
+
+          </div>
+
+        </section>
+
       </div>
     );
   }
 
   // ==================================================
-  // Error
+  // ERROR
   // ==================================================
 
-  if (
-    error &&
-    !showDeleteModal
-  ) {
+  if (error && !showDeleteModal) {
     return (
       <div className="dashboard-error">
         <div className="dashboard-error-card">
 
-          <h2>
-            Something went wrong
-          </h2>
+          <h2>Something went wrong</h2>
 
           <p>{error}</p>
 
           <button
             type="button"
-            onClick={() =>
-              loadDashboard(true)
-            }
+            onClick={() => loadDashboard(true)}
           >
             Try Again
           </button>
@@ -534,9 +637,9 @@ function Dashboard() {
   return (
     <div className="dashboard-new">
 
-      {/* ==================================================
+      {/* ==========================================
           HEADER
-          ================================================== */}
+          ========================================== */}
 
       <div className="dashboard-top">
 
@@ -546,13 +649,10 @@ function Dashboard() {
             FINANCIAL OVERVIEW
           </span>
 
-          <h1>
-            Dashboard
-          </h1>
+          <h1>Dashboard</h1>
 
           <p>
-            Here's what's happening with
-            your money.
+            Here's what's happening with your money.
           </p>
 
         </div>
@@ -560,9 +660,7 @@ function Dashboard() {
         <button
           type="button"
           className="dashboard-add-button"
-          onClick={() =>
-            navigate("/transactions")
-          }
+          onClick={() => navigate("/transactions?add=true")}
         >
           <Plus size={18} />
           Add Transaction
@@ -570,9 +668,9 @@ function Dashboard() {
 
       </div>
 
-      {/* ==================================================
+      {/* ==========================================
           SUMMARY
-          ================================================== */}
+          ========================================== */}
 
       <div className="dashboard-summary-grid">
 
@@ -586,9 +684,7 @@ function Dashboard() {
 
           <div>
 
-            <span>
-              Total Balance
-            </span>
+            <span>Total Balance</span>
 
             <h2>
               ₹
@@ -611,9 +707,7 @@ function Dashboard() {
 
           <div>
 
-            <span>
-              Total Income
-            </span>
+            <span>Total Income</span>
 
             <h2>
               ₹
@@ -636,9 +730,7 @@ function Dashboard() {
 
           <div>
 
-            <span>
-              Total Expenses
-            </span>
+            <span>Total Expenses</span>
 
             <h2>
               ₹
@@ -653,9 +745,9 @@ function Dashboard() {
 
       </div>
 
-      {/* ==================================================
+      {/* ==========================================
           STATISTICS
-          ================================================== */}
+          ========================================== */}
 
       <section className="statistics-card">
 
@@ -690,21 +782,17 @@ function Dashboard() {
             <label className="month-selector">
 
               <select
-                value={
-                  selectedMonthNumber
-                }
+                value={selectedMonthNumber}
                 onChange={(event) => {
-                  const month =
-                    String(
-                      event.target.value,
-                    ).padStart(2, "0");
+                  const month = String(
+                    event.target.value,
+                  ).padStart(2, "0");
 
                   setSelectedMonth(
                     `${selectedYear}-${month}`,
                   );
                 }}
               >
-
                 {[
                   "January",
                   "February",
@@ -718,17 +806,14 @@ function Dashboard() {
                   "October",
                   "November",
                   "December",
-                ].map(
-                  (month, index) => (
-                    <option
-                      key={month}
-                      value={index + 1}
-                    >
-                      {month}
-                    </option>
-                  ),
-                )}
-
+                ].map((month, index) => (
+                  <option
+                    key={month}
+                    value={index + 1}
+                  >
+                    {month}
+                  </option>
+                ))}
               </select>
 
               <ChevronDown size={16} />
@@ -742,10 +827,9 @@ function Dashboard() {
               <select
                 value={selectedYear}
                 onChange={(event) => {
-                  const year =
-                    Number(
-                      event.target.value,
-                    );
+                  const year = Number(
+                    event.target.value,
+                  );
 
                   setSelectedMonth(
                     `${year}-${String(
@@ -754,18 +838,14 @@ function Dashboard() {
                   );
                 }}
               >
-
-                {availableYears.map(
-                  (year) => (
-                    <option
-                      key={year}
-                      value={year}
-                    >
-                      {year}
-                    </option>
-                  ),
-                )}
-
+                {availableYears.map((year) => (
+                  <option
+                    key={year}
+                    value={year}
+                  >
+                    {year}
+                  </option>
+                ))}
               </select>
 
               <ChevronDown size={16} />
@@ -776,9 +856,7 @@ function Dashboard() {
 
         </div>
 
-        {/* ==================================================
-            GRAPH
-            ================================================== */}
+        {/* GRAPH */}
 
         <div className="dashboard-chart">
 
@@ -786,7 +864,6 @@ function Dashboard() {
             width="100%"
             height={300}
           >
-
             <BarChart
               data={chartDisplayData}
               margin={{
@@ -813,12 +890,6 @@ function Dashboard() {
                   fill: "#8b8798",
                 }}
               />
-
-              {/* 
-                IMPORTANT:
-                The values shown here are logarithmic
-                visual values, not actual rupees.
-              */}
 
               <YAxis
                 axisLine={false}
@@ -853,20 +924,13 @@ function Dashboard() {
                     ).toFixed(0)}k`;
                   }
 
-                  return `₹${Math.round(
-                    original,
-                  )}`;
+                  return `₹${Math.round(original)}`;
                 }}
               />
 
-              {/* ==================================================
-                  TOOLTIP
-                  ================================================== */}
-
               <Tooltip
                 cursor={{
-                  fill:
-                    "rgba(124, 58, 237, 0.04)",
+                  fill: "rgba(124, 58, 237, 0.04)",
                 }}
                 formatter={(
                   value,
@@ -881,70 +945,45 @@ function Dashboard() {
                   return [
                     `₹${Number(
                       originalValue,
-                    ).toLocaleString(
-                      "en-IN",
-                    )}`,
+                    ).toLocaleString("en-IN")}`,
                     name,
                   ];
                 }}
-                labelFormatter={(label) =>
-                  label
-                }
+                labelFormatter={(label) => label}
               />
-
-              {/* ==================================================
-                  INCOME BAR
-                  ================================================== */}
 
               <Bar
                 dataKey="incomeDisplay"
                 name="Income"
                 fill="#7c3aed"
-                radius={[
-                  7,
-                  7,
-                  0,
-                  0,
-                ]}
+                radius={[7, 7, 0, 0]}
                 barSize={13}
               />
-
-              {/* ==================================================
-                  EXPENSE BAR
-                  ================================================== */}
 
               <Bar
                 dataKey="expenseDisplay"
                 name="Expenses"
                 fill="#f97316"
-                radius={[
-                  7,
-                  7,
-                  0,
-                  0,
-                ]}
+                radius={[7, 7, 0, 0]}
                 barSize={13}
               />
 
             </BarChart>
-
           </ResponsiveContainer>
 
         </div>
 
-        {/* ==================================================
-            LEGEND
-            ================================================== */}
+        {/* LEGEND */}
 
         <div className="chart-legend">
 
           <div>
-            <span className="legend-dot income-dot"></span>
+            <span className="legend-dot income-dot" />
             Income
           </div>
 
           <div>
-            <span className="legend-dot expense-dot"></span>
+            <span className="legend-dot expense-dot" />
             Expenses
           </div>
 
@@ -952,9 +991,9 @@ function Dashboard() {
 
       </section>
 
-      {/* ==================================================
+      {/* ==========================================
           TRANSACTIONS
-          ================================================== */}
+          ========================================== */}
 
       <section className="dashboard-transactions-card">
 
@@ -966,16 +1005,14 @@ function Dashboard() {
               ACTIVITY
             </span>
 
-            <h2>
-              Transactions
-            </h2>
+            <h2>Transactions</h2>
 
             <p>
               Your latest{" "}
-              {transactionType ===
-              "income"
+              {transactionType === "income"
                 ? "income"
-                : "expenses"}.
+                : "expenses"}
+              .
             </p>
 
           </div>
@@ -983,33 +1020,26 @@ function Dashboard() {
           <button
             type="button"
             className="view-all-button"
-            onClick={() =>
-              navigate("/transactions")
-            }
+            onClick={() => navigate("/transactions")}
           >
             View All
           </button>
 
         </div>
 
-        {/* ==================================================
-            TOGGLE
-            ================================================== */}
+        {/* TOGGLE */}
 
         <div className="transaction-toggle">
 
           <button
             type="button"
             className={
-              transactionType ===
-              "income"
+              transactionType === "income"
                 ? "active"
                 : ""
             }
             onClick={() =>
-              setTransactionType(
-                "income",
-              )
+              setTransactionType("income")
             }
           >
             Income
@@ -1018,15 +1048,12 @@ function Dashboard() {
           <button
             type="button"
             className={
-              transactionType ===
-              "expense"
+              transactionType === "expense"
                 ? "active"
                 : ""
             }
             onClick={() =>
-              setTransactionType(
-                "expense",
-              )
+              setTransactionType("expense")
             }
           >
             Expenses
@@ -1034,33 +1061,26 @@ function Dashboard() {
 
         </div>
 
-        {/* ==================================================
-            TRANSACTION LIST
-            ================================================== */}
+        {/* TRANSACTION LIST */}
 
         <div className="dashboard-transaction-list">
 
-          {displayedTransactions.length ===
-          0 ? (
+          {displayedTransactions.length === 0 ? (
 
             <div className="dashboard-empty">
 
               <p>
                 No{" "}
-                {transactionType ===
-                "income"
+                {transactionType === "income"
                   ? "income"
                   : "expenses"}{" "}
-                found for{" "}
-                {monthName}.
+                found for {monthName}.
               </p>
 
               <button
                 type="button"
                 onClick={() =>
-                  navigate(
-                    "/transactions",
-                  )
+                  navigate("/transactions?add=true")
                 }
               >
                 Add Transaction
@@ -1072,18 +1092,13 @@ function Dashboard() {
 
             displayedTransactions.map(
               (transaction) => {
-
                 const transactionDate =
-                  new Date(
-                    transaction.date,
-                  );
+                  new Date(transaction.date);
 
                 return (
                   <div
                     className="dashboard-transaction-item"
-                    key={
-                      transaction._id
-                    }
+                    key={transaction._id}
                   >
 
                     <div className="transaction-info">
@@ -1096,7 +1111,6 @@ function Dashboard() {
                             : "transaction-icon expense-transaction-icon"
                         }
                       >
-
                         {transaction.type ===
                         "income" ? (
                           <ArrowUpRight
@@ -1107,28 +1121,22 @@ function Dashboard() {
                             size={18}
                           />
                         )}
-
                       </div>
 
                       <div>
 
                         <h3>
-                          {
-                            transaction.title
-                          }
+                          {transaction.title}
                         </h3>
 
                         <p>
-
                           {transaction.category
                             ?.name ||
                             "Unknown category"}
 
                           {" · "}
 
-                          {
-                            transaction.paymentMethod
-                          }
+                          {transaction.paymentMethod}
 
                           {" · "}
 
@@ -1139,7 +1147,6 @@ function Dashboard() {
                               month: "short",
                             },
                           )}
-
                         </p>
 
                       </div>
@@ -1156,19 +1163,14 @@ function Dashboard() {
                             : "expense-amount"
                         }
                       >
-
                         {transaction.type ===
                         "income"
                           ? "+"
                           : "-"}
-
                         ₹
                         {Number(
                           transaction.amount,
-                        ).toLocaleString(
-                          "en-IN",
-                        )}
-
+                        ).toLocaleString("en-IN")}
                       </strong>
 
                       <div className="transaction-actions">
@@ -1182,9 +1184,7 @@ function Dashboard() {
                             )
                           }
                         >
-                          <Pencil
-                            size={16}
-                          />
+                          <Pencil size={16} />
                         </button>
 
                         <button
@@ -1196,9 +1196,7 @@ function Dashboard() {
                             )
                           }
                         >
-                          <Trash2
-                            size={16}
-                          />
+                          <Trash2 size={16} />
                         </button>
 
                       </div>
@@ -1214,9 +1212,7 @@ function Dashboard() {
 
         </div>
 
-        {/* ==================================================
-            REFRESH INDICATOR
-            ================================================== */}
+        {/* REFRESH INDICATOR */}
 
         {refreshing && (
           <div className="dashboard-refreshing">
@@ -1226,13 +1222,12 @@ function Dashboard() {
 
       </section>
 
-      {/* ==================================================
+      {/* ==========================================
           DELETE MODAL
-          ================================================== */}
+          ========================================== */}
 
       {showDeleteModal &&
         transactionToDelete && (
-
           <div className="delete-modal-overlay">
 
             <div className="delete-modal">
@@ -1241,13 +1236,10 @@ function Dashboard() {
                 <Trash2 size={24} />
               </div>
 
-              <h2>
-                Delete Transaction?
-              </h2>
+              <h2>Delete Transaction?</h2>
 
               <p>
-                Are you sure you want to
-                delete{" "}
+                Are you sure you want to delete{" "}
                 <strong>
                   "{transactionToDelete.title}"
                 </strong>
@@ -1255,9 +1247,8 @@ function Dashboard() {
               </p>
 
               <p className="delete-modal-warning">
-                This transaction will be
-                removed from your
-                transaction list.
+                This transaction will be removed
+                from your transaction list.
               </p>
 
               {error && (
@@ -1270,9 +1261,7 @@ function Dashboard() {
 
                 <button
                   type="button"
-                  onClick={
-                    closeDeleteModal
-                  }
+                  onClick={closeDeleteModal}
                   disabled={deleting}
                 >
                   Cancel

@@ -23,16 +23,19 @@ router.post("/", protect, async (req, res) => {
         }
         const selectedCategory = await Category.findOne({
             _id: category,
-            user: req.userId,
             isDeleted: false,
+            $or: [
+                { isDefault: true },
+                { user: req.userId },
+            ],
         });
-
         if (!selectedCategory) {
             return res.status(404).json({
                 success: false,
                 message: "Category not found",
             });
         }
+
         if (selectedCategory.type !== "expense") {
             return res.status(400).json({
                 success: false,
@@ -260,8 +263,11 @@ router.put("/:id", protect, async (req, res) => {
 
         const selectedCategory = await Category.findOne({
             _id: category,
-            user: req.userId,
             isDeleted: false,
+            $or: [
+                { isDefault: true },
+                { user: req.userId },
+            ],
         });
 
         if (!selectedCategory) {

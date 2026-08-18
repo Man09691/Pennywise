@@ -1,24 +1,53 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
+
 import { apiRequest } from "../services/api";
-import { Pencil, Trash2, CalendarDays } from "lucide-react";
+
+import {
+  Pencil,
+  Trash2,
+  CalendarDays,
+  Plus,
+  X,
+  ChevronDown,
+  Filter,
+  Receipt,
+  Wallet,
+} from "lucide-react";
 
 function Transactions() {
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
   // ==================================================
-  // FORM STATE
+  // TRANSACTIONS
   // ==================================================
 
-  const [showForm, setShowForm] = useState(false);
+  const [transactions, setTransactions] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  // ==================================================
+  // FORM
+  // ==================================================
+
+  const [showForm, setShowForm] =
+    useState(false);
+
   const [editingTransaction, setEditingTransaction] =
     useState(null);
-  const [submitting, setSubmitting] = useState(false);
+
+  const [submitting, setSubmitting] =
+    useState(false);
 
   // ==================================================
-  // DELETE STATE
+  // DELETE
   // ==================================================
 
   const [showDeleteModal, setShowDeleteModal] =
@@ -27,36 +56,21 @@ function Transactions() {
   const [transactionToDelete, setTransactionToDelete] =
     useState(null);
 
-  const [deleting, setDeleting] = useState(false);
-
-  // ==================================================
-  // CATEGORY STATE
-  // ==================================================
-
-  const [categories, setCategories] = useState([]);
-
-  const [showCategoryForm, setShowCategoryForm] =
+  const [deleting, setDeleting] =
     useState(false);
 
-  const [newCategoryName, setNewCategoryName] =
-    useState("");
+  // ==================================================
+  // CATEGORIES
+  // ==================================================
+
+  const [categories, setCategories] =
+    useState([]);
 
   // ==================================================
-  // TRANSACTION FILTERS
+  // CURRENT DATE
   // ==================================================
 
   const now = new Date();
-
-  const [selectedMonth, setSelectedMonth] = useState(
-    now.getMonth() + 1,
-  );
-
-  const [selectedYear, setSelectedYear] = useState(
-    now.getFullYear(),
-  );
-
-  // Optional specific date
-  const [selectedDate, setSelectedDate] = useState("");
 
   // ==================================================
   // SEARCH PARAMS
@@ -65,19 +79,102 @@ function Transactions() {
   const [searchParams, setSearchParams] =
     useSearchParams();
 
+  const navigate = useNavigate();
+
+  const location = useLocation();
+
+  // ==================================================
+  // URL FILTER VALUES
+  // ==================================================
+
+  /*
+   * Budget page sends:
+   *
+   * month
+   * year
+   * category
+   * type
+   *
+   * Example:
+   *
+   * /transactions?
+   * month=8
+   * &year=2026
+   * &category=123
+   * &type=expense
+   */
+
+  const urlMonth =
+    Number(searchParams.get("month"));
+
+  const urlYear =
+    Number(searchParams.get("year"));
+
+  const urlCategory =
+    searchParams.get("category") || "";
+
+  const urlType =
+    searchParams.get("type") || "";
+
+  // ==================================================
+  // TRANSACTION FILTERS
+  // ==================================================
+
+  const [selectedMonth, setSelectedMonth] =
+    useState(
+      urlMonth >= 1 && urlMonth <= 12
+        ? urlMonth
+        : now.getMonth() + 1,
+    );
+
+  const [selectedYear, setSelectedYear] =
+    useState(
+      urlYear >= now.getFullYear() - 5 &&
+      urlYear <= now.getFullYear() + 5
+        ? urlYear
+        : now.getFullYear(),
+    );
+
+  const [selectedDate, setSelectedDate] =
+    useState("");
+
+  /*
+   * NEW:
+   *
+   * Category filter.
+   *
+   * This gets populated automatically when
+   * opening Transactions from Budget.
+   */
+
+  const [selectedCategory, setSelectedCategory] =
+    useState(urlCategory);
+
+  /*
+   * NEW:
+   *
+   * Transaction type filter.
+   *
+   * Budget sends "expense".
+   */
+
+  const [selectedType, setSelectedType] =
+    useState(urlType);
+
   // ==================================================
   // FORM DATA
   // ==================================================
 
-  const [formData, setFormData] = useState({
-    title: "",
-    amount: "",
-    type: "expense",
-    category: "",
-    paymentMethod: "",
-    date: "",
-    note: "",
-  });
+  const [formData, setFormData] =
+    useState({
+      title: "",
+      amount: "",
+      type: "expense",
+      category: "",
+      paymentMethod: "",
+      date: "",
+      note: "",
+    });
 
   // ==================================================
   // AVAILABLE YEARS
@@ -120,24 +217,27 @@ function Transactions() {
     monthNames[selectedMonth - 1];
 
   // ==================================================
-  // MONTH START / END DATE
+  // MONTH START / END
   // ==================================================
 
-  const monthStartDate = `${selectedYear}-${String(
-    selectedMonth,
-  ).padStart(2, "0")}-01`;
+  const monthStartDate =
+    `${selectedYear}-${String(
+      selectedMonth,
+    ).padStart(2, "0")}-01`;
 
-  const monthEndDay = new Date(
-    selectedYear,
-    selectedMonth,
-    0,
-  ).getDate();
+  const monthEndDay =
+    new Date(
+      selectedYear,
+      selectedMonth,
+      0,
+    ).getDate();
 
-  const monthEndDate = `${selectedYear}-${String(
-    selectedMonth,
-  ).padStart(2, "0")}-${String(
-    monthEndDay,
-  ).padStart(2, "0")}`;
+  const monthEndDate =
+    `${selectedYear}-${String(
+      selectedMonth,
+    ).padStart(2, "0")}-${String(
+      monthEndDay,
+    ).padStart(2, "0")}`;
 
   // ==================================================
   // NOTIFY DASHBOARD
@@ -163,12 +263,13 @@ function Transactions() {
 
       setError("");
 
-      const data = await apiRequest(
-        "/transactions",
-        {
-          cache: "no-store",
-        },
-      );
+      const data =
+        await apiRequest(
+          "/transactions",
+          {
+            cache: "no-store",
+          },
+        );
 
       setTransactions(
         data.transactions || [],
@@ -188,12 +289,13 @@ function Transactions() {
 
   async function loadCategories() {
     try {
-      const data = await apiRequest(
-        "/categories",
-        {
-          cache: "no-store",
-        },
-      );
+      const data =
+        await apiRequest(
+          "/categories",
+          {
+            cache: "no-store",
+          },
+        );
 
       setCategories(
         data.categories || [],
@@ -219,109 +321,276 @@ function Transactions() {
   }, []);
 
   // ==================================================
+  // APPLY URL FILTERS
+  // ==================================================
+
+  /*
+   * This effect makes sure that whenever we
+   * navigate from Budget -> Transactions,
+   * the correct filters are applied.
+   */
+
+  useEffect(() => {
+    const monthFromUrl =
+      Number(
+        searchParams.get("month"),
+      );
+
+    const yearFromUrl =
+      Number(
+        searchParams.get("year"),
+      );
+
+    const categoryFromUrl =
+      searchParams.get(
+        "category",
+      ) || "";
+
+    const typeFromUrl =
+      searchParams.get("type") ||
+      "";
+
+    if (
+      monthFromUrl >= 1 &&
+      monthFromUrl <= 12
+    ) {
+      setSelectedMonth(
+        monthFromUrl,
+      );
+    }
+
+    if (
+      yearFromUrl >=
+        now.getFullYear() - 5 &&
+      yearFromUrl <=
+        now.getFullYear() + 5
+    ) {
+      setSelectedYear(
+        yearFromUrl,
+      );
+    }
+
+    setSelectedCategory(
+      categoryFromUrl,
+    );
+
+    setSelectedType(
+      typeFromUrl,
+    );
+
+    /*
+     * When category/month/year comes
+     * from Budget, clear specific date.
+     */
+
+    if (
+      monthFromUrl ||
+      yearFromUrl ||
+      categoryFromUrl
+    ) {
+      setSelectedDate("");
+    }
+  }, [searchParams]);
+
+  // ==================================================
+  // RESTORE FORM FROM CATEGORIES
+  // ==================================================
+
+  useEffect(() => {
+    const restoredFormData =
+      location.state
+        ?.transactionFormData;
+
+    if (!restoredFormData) {
+      return;
+    }
+
+    setEditingTransaction(
+      null,
+    );
+
+    setFormData({
+      title:
+        restoredFormData.title ||
+        "",
+      amount:
+        restoredFormData.amount ||
+        "",
+      type:
+        restoredFormData.type ||
+        "expense",
+      category:
+        restoredFormData.category ||
+        "",
+      paymentMethod:
+        restoredFormData.paymentMethod ||
+        "",
+      date:
+        restoredFormData.date ||
+        "",
+      note:
+        restoredFormData.note ||
+        "",
+    });
+
+    setError("");
+    setShowForm(true);
+
+    navigate(
+      "/transactions",
+      {
+        replace: true,
+        state: null,
+      },
+    );
+  }, [
+    location.state,
+    navigate,
+  ]);
+
+  // ==================================================
   // FILTER TRANSACTIONS
-  //
-  // 1. Month
-  // 2. Year
-  // 3. Optional Date
   // ==================================================
 
   const filteredTransactions =
-    transactions.filter((transaction) => {
-      if (!transaction.date) {
-        return false;
-      }
+    transactions.filter(
+      (transaction) => {
 
-      const transactionDate =
-        new Date(transaction.date);
+        // --------------------------------------------
+        // DATE CHECK
+        // --------------------------------------------
 
-      if (
-        Number.isNaN(
-          transactionDate.getTime(),
-        )
-      ) {
-        return false;
-      }
+        if (!transaction.date) {
+          return false;
+        }
 
-      // ----------------------------------------------
-      // MATCH MONTH
-      // ----------------------------------------------
+        const transactionDate =
+          new Date(
+            transaction.date,
+          );
 
-      if (
-        transactionDate.getMonth() + 1 !==
-        selectedMonth
-      ) {
-        return false;
-      }
+        if (
+          Number.isNaN(
+            transactionDate.getTime(),
+          )
+        ) {
+          return false;
+        }
 
-      // ----------------------------------------------
-      // MATCH YEAR
-      // ----------------------------------------------
+        // --------------------------------------------
+        // MONTH
+        // --------------------------------------------
 
-      if (
-        transactionDate.getFullYear() !==
-        selectedYear
-      ) {
-        return false;
-      }
+        if (
+          transactionDate.getMonth() +
+            1 !==
+          selectedMonth
+        ) {
+          return false;
+        }
 
-      // ----------------------------------------------
-      // NO DATE SELECTED
-      //
-      // Show all transactions for selected
-      // month and year.
-      // ----------------------------------------------
+        // --------------------------------------------
+        // YEAR
+        // --------------------------------------------
 
-      if (!selectedDate) {
-        return true;
-      }
+        if (
+          transactionDate.getFullYear() !==
+          selectedYear
+        ) {
+          return false;
+        }
 
-      // ----------------------------------------------
-      // SPECIFIC DATE SELECTED
-      //
-      // Show only transactions from that date.
-      // ----------------------------------------------
+        // --------------------------------------------
+        // TYPE
+        // --------------------------------------------
 
-      const selectedDateObject =
-        new Date(
-          `${selectedDate}T00:00:00`,
+        if (
+          selectedType &&
+          transaction.type !==
+            selectedType
+        ) {
+          return false;
+        }
+
+        // --------------------------------------------
+        // CATEGORY
+        // --------------------------------------------
+
+        if (
+          selectedCategory
+        ) {
+          const transactionCategoryId =
+            transaction.category?._id ||
+            transaction.category;
+
+          if (
+            transactionCategoryId !==
+            selectedCategory
+          ) {
+            return false;
+          }
+        }
+
+        // --------------------------------------------
+        // SPECIFIC DATE
+        // --------------------------------------------
+
+        if (!selectedDate) {
+          return true;
+        }
+
+        const selectedDateObject =
+          new Date(
+            selectedDate +
+              "T00:00:00",
+          );
+
+        if (
+          Number.isNaN(
+            selectedDateObject.getTime(),
+          )
+        ) {
+          return false;
+        }
+
+        return (
+          transactionDate.getFullYear() ===
+            selectedDateObject.getFullYear() &&
+          transactionDate.getMonth() ===
+            selectedDateObject.getMonth() &&
+          transactionDate.getDate() ===
+            selectedDateObject.getDate()
         );
-
-      return (
-        transactionDate.getFullYear() ===
-          selectedDateObject.getFullYear() &&
-        transactionDate.getMonth() ===
-          selectedDateObject.getMonth() &&
-        transactionDate.getDate() ===
-          selectedDateObject.getDate()
-      );
-    });
+      },
+    );
 
   // ==================================================
-  // SORT TRANSACTIONS
-  //
-  // Latest transaction first
+  // SORT
   // ==================================================
 
-  const sortedTransactions = [
-    ...filteredTransactions,
-  ].sort(
-    (a, b) =>
-      new Date(b.date) -
-      new Date(a.date),
-  );
+  const sortedTransactions =
+    [...filteredTransactions].sort(
+      (a, b) =>
+        new Date(b.date) -
+        new Date(a.date),
+    );
 
   // ==================================================
   // HANDLE INPUT CHANGE
   // ==================================================
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const {
+      name,
+      value,
+    } = event.target;
 
-    setFormData((previousData) => ({
-      ...previousData,
-      [name]: value,
-    }));
+    setFormData(
+      (previousData) => ({
+        ...previousData,
+        [name]: value,
+      }),
+    );
   }
 
   // ==================================================
@@ -339,25 +608,24 @@ function Transactions() {
       note: "",
     });
 
-    setEditingTransaction(null);
-    setShowCategoryForm(false);
-    setNewCategoryName("");
+    setEditingTransaction(
+      null,
+    );
   }
 
   // ==================================================
-  // OPEN ADD TRANSACTION
+  // ADD TRANSACTION
   // ==================================================
 
   function handleAddTransaction() {
     resetForm();
 
     setError("");
-
     setShowForm(true);
   }
 
   // ==================================================
-  // OPEN EDIT TRANSACTION
+  // EDIT TRANSACTION
   // ==================================================
 
   function handleEditTransaction(
@@ -370,49 +638,47 @@ function Transactions() {
     );
 
     setFormData({
-      title: transaction.title || "",
-
+      title:
+        transaction.title ||
+        "",
       amount:
-        transaction.amount ?? "",
-
+        transaction.amount ??
+        "",
       type:
         transaction.type ||
         "expense",
-
       category:
         transaction.category?._id ||
         transaction.category ||
         "",
-
       paymentMethod:
         transaction.paymentMethod ||
         "",
-
-      date: transaction.date
-        ? new Date(transaction.date)
-            .toISOString()
-            .split("T")[0]
-        : "",
-
+      date:
+        transaction.date
+          ? new Date(
+              transaction.date,
+            )
+              .toISOString()
+              .split("T")[0]
+          : "",
       note:
-        transaction.note || "",
+        transaction.note ||
+        "",
     });
-
-    setShowCategoryForm(false);
-
-    setNewCategoryName("");
 
     setShowForm(true);
   }
 
   // ==================================================
-  // AUTOMATICALLY OPEN EDIT
-  // FROM DASHBOARD
+  // AUTOMATIC EDIT FROM DASHBOARD
   // ==================================================
 
   useEffect(() => {
     const editId =
-      searchParams.get("edit");
+      searchParams.get(
+        "edit",
+      );
 
     if (
       !editId ||
@@ -436,6 +702,45 @@ function Transactions() {
     }
   }, [
     transactions,
+    searchParams,
+    setSearchParams,
+  ]);
+
+  // ==================================================
+  // AUTOMATIC ADD FROM DASHBOARD
+  // ==================================================
+
+  useEffect(() => {
+    const addTransaction =
+      searchParams.get(
+        "add",
+      );
+
+    if (
+      addTransaction !== "true"
+    ) {
+      return;
+    }
+
+    setEditingTransaction(
+      null,
+    );
+
+    setFormData({
+      title: "",
+      amount: "",
+      type: "expense",
+      category: "",
+      paymentMethod: "",
+      date: "",
+      note: "",
+    });
+
+    setError("");
+    setShowForm(true);
+
+    setSearchParams({});
+  }, [
     searchParams,
     setSearchParams,
   ]);
@@ -469,7 +774,6 @@ function Transactions() {
     }
 
     setDeleting(true);
-
     setError("");
 
     try {
@@ -480,11 +784,17 @@ function Transactions() {
         },
       );
 
-      await loadTransactions(false);
+      await loadTransactions(
+        false,
+      );
 
-      setShowDeleteModal(false);
+      setShowDeleteModal(
+        false,
+      );
 
-      setTransactionToDelete(null);
+      setTransactionToDelete(
+        null,
+      );
 
       notifyTransactionsUpdated();
     } catch (error) {
@@ -495,60 +805,29 @@ function Transactions() {
   }
 
   // ==================================================
-  // ADD NEW CATEGORY
+  // ADD CATEGORY
   // ==================================================
 
-  async function handleAddCategory() {
-    setError("");
-
-    const categoryName =
-      newCategoryName.trim();
-
-    if (!categoryName) {
-      setError(
-        "Category name is required.",
-      );
-
-      return;
-    }
-
-    try {
-      const data =
-        await apiRequest(
-          "/categories",
-          {
-            method: "POST",
-
-            body: JSON.stringify({
-              name: categoryName,
-              type: formData.type,
-            }),
-          },
-        );
-
-      await loadCategories();
-
-      setFormData(
-        (previousData) => ({
-          ...previousData,
-          category:
-            data.category._id,
-        }),
-      );
-
-      setShowCategoryForm(false);
-
-      setNewCategoryName("");
-    } catch (error) {
-      setError(error.message);
-    }
+  function handleAddCategory() {
+    navigate(
+      "/categories",
+      {
+        state: {
+          from: "transaction",
+          transactionFormData:
+            formData,
+        },
+      },
+    );
   }
 
   // ==================================================
   // SUBMIT TRANSACTION
   // ==================================================
 
-  async function handleSubmit(event) {
+  async function handleSubmit(
+    event,
+  ) {
     event.preventDefault();
 
     if (submitting) {
@@ -556,10 +835,6 @@ function Transactions() {
     }
 
     setError("");
-
-    // ----------------------------------------------
-    // VALIDATION
-    // ----------------------------------------------
 
     if (
       !formData.title.trim() ||
@@ -575,7 +850,9 @@ function Transactions() {
     }
 
     const amount =
-      Number(formData.amount);
+      Number(
+        formData.amount,
+      );
 
     if (
       !Number.isFinite(amount) ||
@@ -597,7 +874,8 @@ function Transactions() {
 
         amount,
 
-        type: formData.type,
+        type:
+          formData.type,
 
         category:
           formData.category,
@@ -620,33 +898,23 @@ function Transactions() {
           : {}),
       };
 
-      // ----------------------------------------------
-      // EDIT
-      // ----------------------------------------------
-
-      if (editingTransaction) {
+      if (
+        editingTransaction
+      ) {
         await apiRequest(
           `/transactions/${editingTransaction._id}`,
           {
             method: "PUT",
-
             body: JSON.stringify(
               transactionData,
             ),
           },
         );
-      }
-
-      // ----------------------------------------------
-      // ADD
-      // ----------------------------------------------
-
-      else {
+      } else {
         await apiRequest(
           "/transactions",
           {
             method: "POST",
-
             body: JSON.stringify(
               transactionData,
             ),
@@ -654,25 +922,20 @@ function Transactions() {
         );
       }
 
-      // ----------------------------------------------
-      // REFRESH
-      // ----------------------------------------------
-
-      await loadTransactions(false);
-
-      // ----------------------------------------------
-      // CLOSE FORM
-      // ----------------------------------------------
+      await loadTransactions(
+        false,
+      );
 
       setShowForm(false);
 
       resetForm();
 
-      setSearchParams({});
-
-      // ----------------------------------------------
-      // NOTIFY DASHBOARD
-      // ----------------------------------------------
+      /*
+       * IMPORTANT:
+       *
+       * Don't destroy the Budget filters
+       * if user came from Budget.
+       */
 
       notifyTransactionsUpdated();
     } catch (error) {
@@ -694,6 +957,20 @@ function Transactions() {
     );
 
   // ==================================================
+  // SELECTED CATEGORY NAME
+  // ==================================================
+
+  const selectedCategoryObject =
+    categories.find(
+      (category) =>
+        category._id ===
+        selectedCategory,
+    );
+
+  const selectedCategoryName =
+    selectedCategoryObject?.name;
+
+  // ==================================================
   // CLOSE FORM
   // ==================================================
 
@@ -708,15 +985,89 @@ function Transactions() {
 
     setError("");
 
-    setSearchParams({});
+    /*
+     * Preserve URL filters if we came from
+     * Budget.
+     *
+     * Only remove "add" and "edit".
+     */
+
+    const preservedParams =
+      new URLSearchParams(
+        searchParams,
+      );
+
+    preservedParams.delete(
+      "add",
+    );
+
+    preservedParams.delete(
+      "edit",
+    );
+
+    setSearchParams(
+      preservedParams,
+    );
   }
 
   // ==================================================
-  // CLEAR DATE FILTER
+  // CLEAR DATE
   // ==================================================
 
   function clearDateFilter() {
     setSelectedDate("");
+  }
+
+  // ==================================================
+  // CLEAR CATEGORY FILTER
+  // ==================================================
+
+  function clearCategoryFilter() {
+    setSelectedCategory("");
+
+    const params =
+      new URLSearchParams(
+        searchParams,
+      );
+
+    params.delete(
+      "category",
+    );
+
+    setSearchParams(params);
+  }
+
+  // ==================================================
+  // FORMAT SELECTED DATE
+  // ==================================================
+
+  function getFormattedSelectedDate() {
+    if (!selectedDate) {
+      return `${selectedMonthName} ${selectedYear}`;
+    }
+
+    const date =
+      new Date(
+        selectedDate +
+          "T00:00:00",
+      );
+
+    if (
+      Number.isNaN(
+        date.getTime(),
+      )
+    ) {
+      return `${selectedMonthName} ${selectedYear}`;
+    }
+
+    return date.toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      },
+    );
   }
 
   // ==================================================
@@ -725,16 +1076,67 @@ function Transactions() {
 
   if (loading) {
     return (
-      <div className="transactions-loading">
-        <div className="transactions-loading-card">
-          Loading transactions...
+      <div className="transactions-page">
+
+        <div className="transactions-header-skeleton">
+
+          <div className="skeleton-text skeleton-title" />
+
+          <div className="skeleton-button" />
+
         </div>
+
+        <div className="transaction-filter-card skeleton-filter">
+
+          <div className="skeleton-text skeleton-subtitle" />
+
+          <div className="skeleton-filters">
+
+            <div className="skeleton-select" />
+
+            <div className="skeleton-select" />
+
+            <div className="skeleton-select" />
+
+          </div>
+
+        </div>
+
+        <div className="transactions-list-card skeleton-list">
+
+          {Array.from({
+            length: 5,
+          }).map(
+            (_, i) => (
+              <div
+                key={i}
+                className="skeleton-transaction-item"
+              >
+
+                <div className="skeleton-icon" />
+
+                <div className="skeleton-details">
+
+                  <div className="skeleton-text skeleton-line-short" />
+
+                  <div className="skeleton-text skeleton-line-long" />
+
+                </div>
+
+                <div className="skeleton-amount" />
+
+              </div>
+            ),
+          )}
+
+        </div>
+
       </div>
     );
   }
 
   // ==================================================
-  // ERROR
+  // ERROR STATE
   // ==================================================
 
   if (
@@ -743,21 +1145,32 @@ function Transactions() {
     !showDeleteModal
   ) {
     return (
-      <div className="transactions-error">
-        <h2>
-          Something went wrong
-        </h2>
+      <div className="transactions-page">
 
-        <p>{error}</p>
+        <div className="transactions-error-state">
 
-        <button
-          type="button"
-          onClick={() =>
-            loadTransactions(true)
-          }
-        >
-          Try Again
-        </button>
+          <div className="error-icon-wrapper">
+            <Receipt size={40} />
+          </div>
+
+          <h2>
+            Something went wrong
+          </h2>
+
+          <p>{error}</p>
+
+          <button
+            type="button"
+            onClick={() =>
+              loadTransactions(true)
+            }
+            className="retry-button"
+          >
+            Try Again
+          </button>
+
+        </div>
+
       </div>
     );
   }
@@ -775,7 +1188,8 @@ function Transactions() {
 
       <div className="transactions-header">
 
-        <div>
+        <div className="transactions-header-left">
+
           <span className="transactions-label">
             MONEY ACTIVITY
           </span>
@@ -788,6 +1202,7 @@ function Transactions() {
             Manage and review your
             income and expenses.
           </p>
+
         </div>
 
         <button
@@ -797,7 +1212,8 @@ function Transactions() {
             handleAddTransaction
           }
         >
-          + Add Transaction
+          <Plus size={18} />
+          Add Transaction
         </button>
 
       </div>
@@ -811,27 +1227,36 @@ function Transactions() {
         <div className="transaction-filter-heading">
 
           <div>
+
             <h2>
               Transaction History
             </h2>
 
             <p>
-              Choose a month and year.
-              Select a date only if you
-              want to see one specific day.
+              Choose a month and
+              year. Select a date
+              only if you want to
+              see one specific day.
             </p>
+
           </div>
 
           <div className="transaction-count">
 
-            {sortedTransactions.length}
+            <span className="count-number">
+              {
+                sortedTransactions.length
+              }
+            </span>
 
-            {" "}
-
-            {sortedTransactions.length ===
-            1
-              ? "transaction"
-              : "transactions"}
+            <span className="count-label">
+              {
+                sortedTransactions.length ===
+                1
+                  ? "transaction"
+                  : "transactions"
+              }
+            </span>
 
           </div>
 
@@ -847,32 +1272,57 @@ function Transactions() {
               Month
             </label>
 
-            <select
-              value={selectedMonth}
-              onChange={(event) => {
-                setSelectedMonth(
-                  Number(
-                    event.target.value,
-                  ),
-                );
+            <div className="custom-select-wrapper">
 
-                // Clear date because
-                // old date may belong
-                // to previous month.
-                setSelectedDate("");
-              }}
-            >
-              {monthNames.map(
-                (month, index) => (
-                  <option
-                    key={month}
-                    value={index + 1}
-                  >
-                    {month}
-                  </option>
-                ),
-              )}
-            </select>
+              <select
+                value={
+                  selectedMonth
+                }
+                onChange={(
+                  event,
+                ) => {
+
+                  setSelectedMonth(
+                    Number(
+                      event.target
+                        .value,
+                    ),
+                  );
+
+                  setSelectedDate(
+                    "",
+                  );
+                }}
+              >
+
+                {monthNames.map(
+                  (
+                    monthName,
+                    index,
+                  ) => (
+                    <option
+                      key={
+                        monthName
+                      }
+                      value={
+                        index + 1
+                      }
+                    >
+                      {
+                        monthName
+                      }
+                    </option>
+                  ),
+                )}
+
+              </select>
+
+              <ChevronDown
+                size={16}
+                className="select-chevron"
+              />
+
+            </div>
 
           </div>
 
@@ -884,31 +1334,121 @@ function Transactions() {
               Year
             </label>
 
-            <select
-              value={selectedYear}
-              onChange={(event) => {
-                setSelectedYear(
-                  Number(
-                    event.target.value,
-                  ),
-                );
+            <div className="custom-select-wrapper">
 
-                // Clear date when
-                // changing year.
-                setSelectedDate("");
-              }}
-            >
-              {availableYears.map(
-                (year) => (
-                  <option
-                    key={year}
-                    value={year}
-                  >
-                    {year}
-                  </option>
-                ),
-              )}
-            </select>
+              <select
+                value={
+                  selectedYear
+                }
+                onChange={(
+                  event,
+                ) => {
+
+                  setSelectedYear(
+                    Number(
+                      event.target
+                        .value,
+                    ),
+                  );
+
+                  setSelectedDate(
+                    "",
+                  );
+                }}
+              >
+
+                {availableYears.map(
+                  (yearValue) => (
+                    <option
+                      key={
+                        yearValue
+                      }
+                      value={
+                        yearValue
+                      }
+                    >
+                      {
+                        yearValue
+                      }
+                    </option>
+                  ),
+                )}
+
+              </select>
+
+              <ChevronDown
+                size={16}
+                className="select-chevron"
+              />
+
+            </div>
+
+          </div>
+
+          {/* CATEGORY */}
+
+          <div className="filter-group">
+
+            <label>
+              Category
+            </label>
+
+            <div className="custom-select-wrapper">
+
+              <select
+                value={
+                  selectedCategory
+                }
+                onChange={(
+                  event,
+                ) => {
+
+                  setSelectedCategory(
+                    event.target
+                      .value,
+                  );
+                }}
+              >
+
+                <option value="">
+                  All Categories
+                </option>
+
+                {categories
+                  .filter(
+                    (
+                      category,
+                    ) =>
+                      category.type ===
+                      "expense",
+                  )
+                  .map(
+                    (
+                      category,
+                    ) => (
+                      <option
+                        key={
+                          category._id
+                        }
+                        value={
+                          category._id
+                        }
+                      >
+                        {
+                          category.name
+                        }
+                      </option>
+                    ),
+                  )}
+
+              </select>
+
+              <ChevronDown
+                size={16}
+                className="select-chevron"
+              />
+
+            </div>
 
           </div>
 
@@ -917,10 +1457,9 @@ function Transactions() {
           <div className="filter-group date-filter-group">
 
             <label>
-              Specific Date
-              <span>
-                {" "}
-                (Optional)
+              Specific Date{" "}
+              <span className="optional-badge">
+                Optional
               </span>
             </label>
 
@@ -965,34 +1504,57 @@ function Transactions() {
                 clearDateFilter
               }
             >
+              <X size={14} />
               Clear Date
             </button>
           )}
 
         </div>
 
-        {/* CURRENT FILTER */}
+        {/* ACTIVE FILTER */}
 
         <div className="active-filter">
+
+          <Filter size={14} />
 
           <span>
             Showing:
           </span>
 
           <strong>
-            {selectedDate
-              ? new Date(
-                  `${selectedDate}T00:00:00`,
-                ).toLocaleDateString(
-                  "en-IN",
-                  {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  },
-                )
-              : `${selectedMonthName} ${selectedYear}`}
+            {
+              getFormattedSelectedDate()
+            }
           </strong>
+
+          {selectedCategoryName && (
+            <>
+              <span>
+                ·
+              </span>
+
+              <strong>
+                {
+                  selectedCategoryName
+                }
+              </strong>
+            </>
+          )}
+
+          {selectedType && (
+            <>
+              <span>
+                ·
+              </span>
+
+              <strong>
+                {selectedType ===
+                "expense"
+                  ? "Expenses"
+                  : "Income"}
+              </strong>
+            </>
+          )}
 
         </div>
 
@@ -1011,7 +1573,7 @@ function Transactions() {
 
             <div className="transactions-empty-icon">
               <CalendarDays
-                size={28}
+                size={32}
               />
             </div>
 
@@ -1020,23 +1582,25 @@ function Transactions() {
             </h2>
 
             <p>
-              There are no transactions
-              for{" "}
-
+              There are no
+              transactions for{" "}
               <strong>
-                {selectedDate
-                  ? new Date(
-                      `${selectedDate}T00:00:00`,
-                    ).toLocaleDateString(
-                      "en-IN",
-                      {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      },
-                    )
-                  : `${selectedMonthName} ${selectedYear}`}
+                {
+                  getFormattedSelectedDate()
+                }
               </strong>
+
+              {selectedCategoryName && (
+                <>
+                  {" "}
+                  in{" "}
+                  <strong>
+                    {
+                      selectedCategoryName
+                    }
+                  </strong>
+                </>
+              )}
               .
             </p>
 
@@ -1045,8 +1609,10 @@ function Transactions() {
               onClick={
                 handleAddTransaction
               }
+              className="empty-add-button"
             >
-              + Add Transaction
+              <Plus size={16} />
+              Add Transaction
             </button>
 
           </div>
@@ -1056,7 +1622,10 @@ function Transactions() {
           <div className="transactions-list">
 
             {sortedTransactions.map(
-              (transaction) => {
+              (
+                transaction,
+                index,
+              ) => {
 
                 const transactionDate =
                   new Date(
@@ -1079,6 +1648,9 @@ function Transactions() {
                     key={
                       transaction._id
                     }
+                    style={{
+                      animationDelay: `${index * 0.05}s`,
+                    }}
                   >
 
                     {/* LEFT */}
@@ -1093,10 +1665,18 @@ function Transactions() {
                             : "transaction-type-icon expense-icon"
                         }
                       >
+
                         {transaction.type ===
-                        "income"
-                          ? "+"
-                          : "-"}
+                        "income" ? (
+                          <Wallet
+                            size={18}
+                          />
+                        ) : (
+                          <Receipt
+                            size={18}
+                          />
+                        )}
+
                       </div>
 
                       <div className="transaction-details">
@@ -1109,11 +1689,16 @@ function Transactions() {
 
                         <p>
 
-                          {transaction.category
-                            ?.name ||
-                            "Unknown category"}
+                          {
+                            transaction
+                              .category
+                              ?.name ||
+                            "Unknown category"
+                          }
 
-                          {" · "}
+                          <span className="dot-separator">
+                            ·
+                          </span>
 
                           {
                             transaction.paymentMethod
@@ -1121,15 +1706,15 @@ function Transactions() {
 
                         </p>
 
-                        {/* DATE */}
-
                         <span className="transaction-date">
 
                           <CalendarDays
-                            size={14}
+                            size={13}
                           />
 
-                          {formattedDate}
+                          {
+                            formattedDate
+                          }
 
                         </span>
 
@@ -1154,7 +1739,6 @@ function Transactions() {
                         "income"
                           ? "+"
                           : "-"}
-
                         ₹
                         {Number(
                           transaction.amount,
@@ -1174,9 +1758,10 @@ function Transactions() {
                               transaction,
                             )
                           }
+                          className="action-btn edit-btn"
                         >
                           <Pencil
-                            size={17}
+                            size={16}
                           />
                         </button>
 
@@ -1188,9 +1773,10 @@ function Transactions() {
                               transaction,
                             )
                           }
+                          className="action-btn delete-btn"
                         >
                           <Trash2
-                            size={17}
+                            size={16}
                           />
                         </button>
 
@@ -1209,14 +1795,23 @@ function Transactions() {
       </section>
 
       {/* ==================================================
-          ADD / EDIT FORM
+          ADD / EDIT TRANSACTION FORM
           ================================================== */}
 
       {showForm && (
+        <div
+          className="modal-overlay"
+          onClick={(event) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              closeForm();
+            }
+          }}
+        >
 
-        <div className="transaction-form">
-
-          <div className="transaction-form-card">
+          <div className="transaction-form">
 
             {/* CLOSE */}
 
@@ -1230,7 +1825,7 @@ function Transactions() {
                 submitting
               }
             >
-              ×
+              <X size={20} />
             </button>
 
             {/* HEADER */}
@@ -1289,6 +1884,7 @@ function Transactions() {
                     handleChange
                   }
                   placeholder="e.g. Grocery shopping"
+                  className="form-input"
                 />
 
               </div>
@@ -1301,19 +1897,28 @@ function Transactions() {
                   Amount
                 </label>
 
-                <input
-                  type="number"
-                  name="amount"
-                  value={
-                    formData.amount
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  placeholder="Enter amount"
-                  min="0"
-                  step="0.01"
-                />
+                <div className="amount-input-wrapper">
+
+                  <span className="currency-symbol">
+                    ₹
+                  </span>
+
+                  <input
+                    type="number"
+                    name="amount"
+                    value={
+                      formData.amount
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    placeholder="Enter amount"
+                    min="0"
+                    step="0.01"
+                    className="form-input amount-input"
+                  />
+
+                </div>
 
               </div>
 
@@ -1325,51 +1930,59 @@ function Transactions() {
                   Type
                 </label>
 
-                <select
-                  name="type"
-                  value={
-                    formData.type
-                  }
-                  onChange={(
-                    event,
-                  ) => {
+                <div className="type-toggle">
 
-                    setFormData(
-                      (
-                        previousData,
-                      ) => ({
-                        ...previousData,
+                  <button
+                    type="button"
+                    className={
+                      formData.type ===
+                      "expense"
+                        ? "active"
+                        : ""
+                    }
+                    onClick={() => {
 
-                        type:
-                          event
-                            .target
-                            .value,
+                      setFormData(
+                        (
+                          previousData,
+                        ) => ({
+                          ...previousData,
+                          type: "expense",
+                          category: "",
+                        }),
+                      );
 
-                        category:
-                          "",
-                      }),
-                    );
-
-                    setShowCategoryForm(
-                      false,
-                    );
-
-                    setNewCategoryName(
-                      "",
-                    );
-
-                  }}
-                >
-
-                  <option value="expense">
+                    }}
+                  >
                     Expense
-                  </option>
+                  </button>
 
-                  <option value="income">
+                  <button
+                    type="button"
+                    className={
+                      formData.type ===
+                      "income"
+                        ? "active"
+                        : ""
+                    }
+                    onClick={() => {
+
+                      setFormData(
+                        (
+                          previousData,
+                        ) => ({
+                          ...previousData,
+                          type: "income",
+                          category: "",
+                        }),
+                      );
+
+                    }}
+                  >
                     Income
-                  </option>
+                  </button>
 
-                </select>
+                </div>
 
               </div>
 
@@ -1381,27 +1994,28 @@ function Transactions() {
                   Category
                 </label>
 
-                <select
-                  name="category"
-                  value={
-                    formData.category
-                  }
-                  onChange={(
-                    event,
-                  ) => {
+                <div className="custom-select-wrapper">
 
-                    const value =
-                      event.target
-                        .value;
+                  <select
+                    name="category"
+                    value={
+                      formData.category
+                    }
+                    onChange={(
+                      event,
+                    ) => {
 
-                    if (
-                      value ===
-                      "other"
-                    ) {
+                      const value =
+                        event.target
+                          .value;
 
-                      setShowCategoryForm(
-                        true,
-                      );
+                      if (
+                        value ===
+                        "other"
+                      ) {
+                        handleAddCategory();
+                        return;
+                      }
 
                       setFormData(
                         (
@@ -1409,121 +2023,48 @@ function Transactions() {
                         ) => ({
                           ...previousData,
                           category:
-                            "",
+                            value,
                         }),
                       );
 
-                      return;
-                    }
+                    }}
+                  >
 
-                    setFormData(
+                    <option value="">
+                      Select category
+                    </option>
+
+                    {filteredCategories.map(
                       (
-                        previousData,
-                      ) => ({
-                        ...previousData,
-                        category:
-                          value,
-                      }),
-                    );
+                        category,
+                      ) => (
+                        <option
+                          key={
+                            category._id
+                          }
+                          value={
+                            category._id
+                          }
+                        >
+                          {
+                            category.name
+                          }
+                        </option>
+                      ),
+                    )}
 
-                    setShowCategoryForm(
-                      false,
-                    );
+                    <option value="other">
+                      + Add new category
+                    </option>
 
-                  }}
-                >
+                  </select>
 
-                  <option value="">
-                    Select category
-                  </option>
+                  <ChevronDown
+                    size={16}
+                    className="select-chevron"
+                  />
 
-                  {filteredCategories.map(
-                    (
-                      category,
-                    ) => (
-                      <option
-                        key={
-                          category._id
-                        }
-                        value={
-                          category._id
-                        }
-                      >
-                        {
-                          category.name
-                        }
-                      </option>
-                    ),
-                  )}
-
-                  <option value="other">
-                    Other → Add new category
-                  </option>
-
-                </select>
-
-                {/* ADD CATEGORY */}
-
-                {showCategoryForm && (
-
-                  <div className="add-category-form">
-
-                    <label>
-                      New Category
-                    </label>
-
-                    <input
-                      type="text"
-                      value={
-                        newCategoryName
-                      }
-                      onChange={(
-                        event,
-                      ) =>
-                        setNewCategoryName(
-                          event.target
-                            .value,
-                        )
-                      }
-                      placeholder="Enter category name"
-                    />
-
-                    <div>
-
-                      <button
-                        type="button"
-                        onClick={
-                          handleAddCategory
-                        }
-                      >
-                        Add Category
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-
-                          setShowCategoryForm(
-                            false,
-                          );
-
-                          setNewCategoryName(
-                            "",
-                          );
-
-                          setError(
-                            "",
-                          );
-
-                        }}
-                      >
-                        Cancel
-                      </button>
-
-                    </div>
-
-                  </div>
-                )}
+                </div>
 
               </div>
 
@@ -1535,41 +2076,50 @@ function Transactions() {
                   Payment Method
                 </label>
 
-                <select
-                  name="paymentMethod"
-                  value={
-                    formData.paymentMethod
-                  }
-                  onChange={
-                    handleChange
-                  }
-                >
+                <div className="custom-select-wrapper">
 
-                  <option value="">
-                    Select payment method
-                  </option>
+                  <select
+                    name="paymentMethod"
+                    value={
+                      formData.paymentMethod
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  >
 
-                  <option value="Cash">
-                    Cash
-                  </option>
+                    <option value="">
+                      Select payment method
+                    </option>
 
-                  <option value="Debit Card">
-                    Debit Card
-                  </option>
+                    <option value="Cash">
+                      Cash
+                    </option>
 
-                  <option value="Credit Card">
-                    Credit Card
-                  </option>
+                    <option value="Debit Card">
+                      Debit Card
+                    </option>
 
-                  <option value="UPI">
-                    UPI
-                  </option>
+                    <option value="Credit Card">
+                      Credit Card
+                    </option>
 
-                  <option value="Bank Transfer">
-                    Bank Transfer
-                  </option>
+                    <option value="UPI">
+                      UPI
+                    </option>
 
-                </select>
+                    <option value="Bank Transfer">
+                      Bank Transfer
+                    </option>
+
+                  </select>
+
+                  <ChevronDown
+                    size={16}
+                    className="select-chevron"
+                  />
+
+                </div>
 
               </div>
 
@@ -1590,6 +2140,7 @@ function Transactions() {
                   onChange={
                     handleChange
                   }
+                  className="form-input"
                 />
 
                 <small>
@@ -1604,9 +2155,8 @@ function Transactions() {
               <div className="form-group">
 
                 <label>
-                  Note
-                  <span>
-                    {" "}
+                  Note{" "}
+                  <span className="optional-text">
                     (Optional)
                   </span>
                 </label>
@@ -1621,6 +2171,7 @@ function Transactions() {
                   }
                   placeholder="Add a note about this transaction..."
                   rows="3"
+                  className="form-textarea"
                 />
 
               </div>
@@ -1637,6 +2188,7 @@ function Transactions() {
                   disabled={
                     submitting
                   }
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
@@ -1646,8 +2198,8 @@ function Transactions() {
                   disabled={
                     submitting
                   }
+                  className="btn-primary"
                 >
-
                   {submitting
                     ? editingTransaction
                       ? "Updating..."
@@ -1655,7 +2207,6 @@ function Transactions() {
                     : editingTransaction
                       ? "Update Transaction"
                       : "Add Transaction"}
-
                 </button>
 
               </div>
@@ -1679,11 +2230,7 @@ function Transactions() {
             <div className="delete-modal">
 
               <div className="delete-modal-icon">
-
-                <Trash2
-                  size={24}
-                />
-
+                <Trash2 size={24} />
               </div>
 
               <h2>
@@ -1691,15 +2238,16 @@ function Transactions() {
               </h2>
 
               <p>
-
                 Are you sure you want
                 to delete{" "}
-
                 <strong>
-                  "{transactionToDelete.title}"
+                  &quot;
+                  {
+                    transactionToDelete.title
+                  }
+                  &quot;
                 </strong>
                 ?
-
               </p>
 
               <p className="delete-modal-warning">

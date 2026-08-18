@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import protect from "../middleware/authMiddleware.js";
 import Category from "../models/Category.js";
 import Transaction from "../models/Transaction.js";
@@ -66,18 +67,40 @@ router.post("/", protect, async (req, res) => {
 
 router.get("/", protect, async (req, res) => {
     try {
-        const categories = await Category.find({
-            isDeleted: false,
-            $or: [
-                { isDefault: true },
-                { user: req.userId },
-            ],
-        }).sort({ name: 1 });
+        const categories = await Category.aggregate([
+            // Stage 1: Match categories belonging to this user OR default ones
+            {
+                $match: {
+                    isDeleted: false,
+                    $or: [
+                        { isDefault: true },
+                        { user: new mongoose.Types.ObjectId(req.userId) },
+                    ],
+                },
+            },
+            // Stage 2: Sort so the first document in each group is deterministic
+            { $sort: { createdAt: 1 } },
+            // Stage 3: Group by (name, type, isDefault) — keeps only one per combo
+            {
+                $group: {
+                    _id: {
+                        name: { $toLower: "$name" },
+                        type: "$type",
+                        isDefault: "$isDefault",
+                    },
+                    doc: { $first: "$$ROOT" },
+                },
+            },
+            // Stage 4: Replace root so the output looks like normal category docs
+            { $replaceRoot: { newRoot: "$doc" } },
+            // Stage 5: Final sort by name
+            { $sort: { name: 1 } },
+        ]);
+
         return res.status(200).json({
             success: true,
             categories,
         });
-
     }
     catch (error) {
         res.status(500).json({

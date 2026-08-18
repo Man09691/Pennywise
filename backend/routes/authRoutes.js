@@ -3,8 +3,7 @@ import bycrt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import protect from "../middleware/authMiddleware.js";
-import Category from "../models/Category.js";
-import defaultCategories from "../utils/defaultCategories.js";
+
 
 const router = express.Router();
 
@@ -13,32 +12,50 @@ router.post("/signup", async (req, res) => {
         const { name, email, password } = req.body;
 
         if (!name || !email || !password) {
-            return res.status(400).json({ success: false, message: "All fields are required" });
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required",
+            });
         }
 
         const existingUser = await User.findOne({ email });
+
         if (existingUser) {
-            return res.status(400).json({ success: false, message: "Email already registered" });
+            return res.status(400).json({
+                success: false,
+                message: "Email already registered",
+            });
         }
 
         const passwordHash = await bycrt.hash(password, 10);
 
-        const user = await User.create({ name, email, passwordHash });
-
-        const categories = defaultCategories.map(category => ({
-            user: user._id,
-            name: category.name,
-            type: category.type,
-            isDefault: true,
-        }));
-
-        await Category.insertMany(categories);
-
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-            expiresIn: "7d",
+        const user = await User.create({
+            name,
+            email,
+            passwordHash,
         });
 
-        res.status(201).json({
+        // IMPORTANT:
+        // Do NOT create default categories for the user.
+        //
+        // Default categories are shared globally.
+        // They should exist only once in the Category collection
+        // with:
+        //
+        // isDefault: true
+        // user: null
+
+        const token = jwt.sign(
+            {
+                userId: user._id,
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "7d",
+            }
+        );
+
+        return res.status(201).json({
             success: true,
             user: {
                 _id: user._id,
@@ -47,13 +64,13 @@ router.post("/signup", async (req, res) => {
             },
             token,
         });
-    }
-
-    catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 });
-
 
 router.post('/login', async (req, res) => {
     try {

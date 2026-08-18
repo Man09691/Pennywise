@@ -5,7 +5,6 @@ const defaultCategories = [
     { name: "Shopping", type: "expense" },
     { name: "Transport", type: "expense" },
     { name: "Health", type: "expense" },
-    { name: "Entertainment", type: "expense" },
     { name: "Education", type: "expense" },
 
     // Income Categories
