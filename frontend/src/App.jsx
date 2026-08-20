@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/layout/Sidebar";
 import PublicRoute from "./components/PublicRoute";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function AppLayout({ children }) {
   return (
@@ -35,98 +36,100 @@ function HomeRedirect() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* ========================================
-            PUBLIC AUTH PAGE
-            ======================================== */}
+    <ThemeProvider> 
+      <BrowserRouter>
+        <Routes>
+          {/* ========================================
+              PUBLIC AUTH PAGE
+              ======================================== */}
 
-        <Route path="/" element={<HomeRedirect />} />
+          <Route path="/" element={<HomeRedirect />} />
 
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Auth />
-            </PublicRoute>
-          }
-        />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Auth />
+              </PublicRoute>
+            }
+          />
 
-        <Route
-          path="/signup"
-          element={
-            <PublicRoute>
-              <Auth />
-            </PublicRoute>
-          }
-        />
+          <Route
+            path="/signup"
+            element={
+              <PublicRoute>
+                <Auth />
+              </PublicRoute>
+            }
+          />
 
-        <Route
-          path="/budgets"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Budget />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/budgets"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Budget />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Profile />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Profile />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
 
-        {/* ========================================
-            PROTECTED APPLICATION PAGES
-            ======================================== */}
+          {/* ========================================
+              PROTECTED APPLICATION PAGES
+              ======================================== */}
 
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Dashboard />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Dashboard />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/transactions"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Transactions />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/transactions"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Transactions />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/categories"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Categories />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/categories"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Categories />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
 
-        {/* ========================================
-            UNKNOWN ROUTES
-            ======================================== */}
+          {/* ========================================
+              UNKNOWN ROUTES
+              ======================================== */}
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
