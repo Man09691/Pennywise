@@ -7690,3 +7690,520 @@ body {
 :root[data-theme="dark"] .logout-button:hover {
   background: rgba(239, 68, 68, 0.12);
 }
+
+/* =========================================================
+   BANK TRANSACTION IMPORT
+   ========================================================= */
+
+.bank-import-page {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+.bank-import-header {
+    margin-bottom: 28px;
+}
+
+.bank-import-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-bottom: 24px;
+    padding: 8px 0;
+
+    border: none;
+    background: transparent;
+
+    color: var(--color-text-secondary);
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.bank-import-back-button:hover {
+    color: var(--color-primary);
+    transform: translateX(-2px);
+}
+
+.bank-import-label,
+.bank-import-small-label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--color-primary);
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 1.2px;
+}
+
+.bank-import-header h1 {
+    margin: 0 0 8px;
+
+    color: var(--color-text);
+
+    font-size: 30px;
+    font-weight: 750;
+
+    letter-spacing: -0.6px;
+}
+
+.bank-import-header p {
+    max-width: 650px;
+    margin: 0;
+
+    color: var(--color-text-secondary);
+
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   IMPORT CARD
+   ========================================================= */
+
+.bank-import-card {
+    padding: 30px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 22px;
+
+    background: var(--color-surface);
+
+    box-shadow: var(--shadow-card);
+}
+
+.bank-import-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+
+    margin-bottom: 25px;
+}
+
+.bank-import-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 12px;
+
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.bank-import-card-header h2 {
+    margin: 0 0 4px;
+
+    color: var(--color-text);
+
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.bank-import-card-header p {
+    margin: 0;
+
+    color: var(--color-text-secondary);
+
+    font-size: 13px;
+}
+
+/* =========================================================
+   DROP ZONE
+   ========================================================= */
+
+.bank-import-dropzone {
+    min-height: 270px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    border: 1.5px dashed var(--color-border-strong);
+    border-radius: 18px;
+
+    background: var(--color-surface-secondary);
+
+    text-align: center;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.bank-import-dropzone:hover,
+.bank-import-dropzone.dragging {
+    border-color: var(--color-primary);
+
+    background: var(--color-primary-soft);
+
+    transform: translateY(-1px);
+}
+
+.bank-import-upload-icon {
+    width: 56px;
+    height: 56px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 16px;
+
+    border-radius: 16px;
+
+    background: var(--color-surface);
+    color: var(--color-primary);
+
+    box-shadow: var(--shadow-soft);
+}
+
+.bank-import-dropzone h3 {
+    margin: 0 0 6px;
+
+    color: var(--color-text);
+
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.bank-import-dropzone p {
+    margin: 0 0 12px;
+
+    color: var(--color-text-secondary);
+
+    font-size: 13px;
+}
+
+.bank-import-dropzone > span {
+    color: var(--color-text-muted);
+
+    font-size: 11px;
+}
+
+/* =========================================================
+   SELECTED FILE
+   ========================================================= */
+
+.bank-import-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 16px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 15px;
+
+    background: var(--color-surface-secondary);
+}
+
+.bank-import-file-left {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bank-import-file-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 11px;
+
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.bank-import-file-info {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bank-import-file-info strong {
+    overflow: hidden;
+
+    color: var(--color-text);
+
+    font-size: 13px;
+    font-weight: 650;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bank-import-file-info span {
+    color: var(--color-text-muted);
+
+    font-size: 11px;
+}
+
+.bank-import-remove {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border: none;
+    border-radius: 9px;
+
+    background: transparent;
+    color: var(--color-text-secondary);
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.bank-import-remove:hover {
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.bank-import-error {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    margin-top: 14px;
+    padding: 12px 14px;
+
+    border: 1px solid var(--color-danger-border);
+    border-radius: 11px;
+
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* =========================================================
+   INFORMATION
+   ========================================================= */
+
+.bank-import-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+
+    margin-top: 18px;
+    padding: 15px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 13px;
+
+    background: var(--color-surface-secondary);
+
+    color: var(--color-text-secondary);
+}
+
+.bank-import-info svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+
+    color: var(--color-primary);
+}
+
+.bank-import-info strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--color-text);
+
+    font-size: 12px;
+}
+
+.bank-import-info p {
+    margin: 0;
+
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.bank-import-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 25px;
+}
+
+.bank-import-actions .btn-primary,
+.bank-import-actions .btn-secondary {
+    min-height: 40px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    padding: 0 17px;
+
+    border-radius: 10px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.bank-import-actions .btn-primary {
+    border: 1px solid var(--color-primary);
+
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.bank-import-actions .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-primary);
+}
+
+.bank-import-actions .btn-primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.bank-import-actions .btn-secondary {
+    border: 1px solid var(--color-border);
+
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+}
+
+.bank-import-actions .btn-secondary:hover {
+    background: var(--color-surface-secondary);
+    color: var(--color-text);
+}
+
+/* =========================================================
+   TRANSACTIONS IMPORT BUTTON
+   ========================================================= */
+
+.transactions-import-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    padding: 9px 13px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.transactions-import-button:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+    .bank-import-page {
+        padding-bottom: 25px;
+    }
+
+    .bank-import-header h1 {
+        font-size: 25px;
+    }
+
+    .bank-import-card {
+        padding: 20px;
+
+        border-radius: 18px;
+    }
+
+    .bank-import-dropzone {
+        min-height: 230px;
+
+        padding: 20px;
+    }
+
+    .bank-import-actions {
+        flex-direction: column-reverse;
+    }
+
+    .bank-import-actions button {
+        width: 100%;
+    }
+}

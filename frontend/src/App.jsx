@@ -6,6 +6,7 @@ import Transactions from "./pages/Transactions";
 import Categories from "./pages/Categories";
 import Budget from "./pages/Budgets";
 import Profile from "./pages/Profile";
+import BankImport from "./pages/BankImport";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Sidebar from "./components/layout/Sidebar";
@@ -36,7 +37,7 @@ function HomeRedirect() {
 
 function App() {
   return (
-    <ThemeProvider> 
+    <ThemeProvider>
       <BrowserRouter>
         <Routes>
           {/* ========================================
@@ -80,6 +81,17 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <Profile />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/transactions/import"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <BankImport />
                 </AppLayout>
               </ProtectedRoute>
             }

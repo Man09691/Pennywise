@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
+  Upload,
+  // your existing icons...
+} from "lucide-react";
 
 import { apiRequest } from "../services/api";
 
@@ -24,47 +24,37 @@ function Transactions() {
   // TRANSACTIONS
   // ==================================================
 
-  const [transactions, setTransactions] =
-    useState([]);
+  const [transactions, setTransactions] = useState([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   // ==================================================
   // FORM
   // ==================================================
 
-  const [showForm, setShowForm] =
-    useState(false);
+  const [showForm, setShowForm] = useState(false);
 
-  const [editingTransaction, setEditingTransaction] =
-    useState(null);
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
-  const [submitting, setSubmitting] =
-    useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // ==================================================
   // DELETE
   // ==================================================
 
-  const [showDeleteModal, setShowDeleteModal] =
-    useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [transactionToDelete, setTransactionToDelete] =
-    useState(null);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
 
-  const [deleting, setDeleting] =
-    useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // ==================================================
   // CATEGORIES
   // ==================================================
 
-  const [categories, setCategories] =
-    useState([]);
+  const [categories, setCategories] = useState([]);
 
   // ==================================================
   // CURRENT DATE
@@ -76,8 +66,7 @@ function Transactions() {
   // SEARCH PARAMS
   // ==================================================
 
-  const [searchParams, setSearchParams] =
-    useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const navigate = useNavigate();
 
@@ -104,39 +93,29 @@ function Transactions() {
    * &type=expense
    */
 
-  const urlMonth =
-    Number(searchParams.get("month"));
+  const urlMonth = Number(searchParams.get("month"));
 
-  const urlYear =
-    Number(searchParams.get("year"));
+  const urlYear = Number(searchParams.get("year"));
 
-  const urlCategory =
-    searchParams.get("category") || "";
+  const urlCategory = searchParams.get("category") || "";
 
-  const urlType =
-    searchParams.get("type") || "";
+  const urlType = searchParams.get("type") || "";
 
   // ==================================================
   // TRANSACTION FILTERS
   // ==================================================
 
-  const [selectedMonth, setSelectedMonth] =
-    useState(
-      urlMonth >= 1 && urlMonth <= 12
-        ? urlMonth
-        : now.getMonth() + 1,
-    );
+  const [selectedMonth, setSelectedMonth] = useState(
+    urlMonth >= 1 && urlMonth <= 12 ? urlMonth : now.getMonth() + 1,
+  );
 
-  const [selectedYear, setSelectedYear] =
-    useState(
-      urlYear >= now.getFullYear() - 5 &&
-      urlYear <= now.getFullYear() + 5
-        ? urlYear
-        : now.getFullYear(),
-    );
+  const [selectedYear, setSelectedYear] = useState(
+    urlYear >= now.getFullYear() - 5 && urlYear <= now.getFullYear() + 5
+      ? urlYear
+      : now.getFullYear(),
+  );
 
-  const [selectedDate, setSelectedDate] =
-    useState("");
+  const [selectedDate, setSelectedDate] = useState("");
 
   /*
    * NEW:
@@ -147,8 +126,7 @@ function Transactions() {
    * opening Transactions from Budget.
    */
 
-  const [selectedCategory, setSelectedCategory] =
-    useState(urlCategory);
+  const [selectedCategory, setSelectedCategory] = useState(urlCategory);
 
   /*
    * NEW:
@@ -158,23 +136,21 @@ function Transactions() {
    * Budget sends "expense".
    */
 
-  const [selectedType, setSelectedType] =
-    useState(urlType);
+  const [selectedType, setSelectedType] = useState(urlType);
 
   // ==================================================
   // FORM DATA
   // ==================================================
 
-  const [formData, setFormData] =
-    useState({
-      title: "",
-      amount: "",
-      type: "expense",
-      category: "",
-      paymentMethod: "",
-      date: "",
-      note: "",
-    });
+  const [formData, setFormData] = useState({
+    title: "",
+    amount: "",
+    type: "expense",
+    category: "",
+    paymentMethod: "",
+    date: "",
+    note: "",
+  });
 
   // ==================================================
   // AVAILABLE YEARS
@@ -182,11 +158,7 @@ function Transactions() {
 
   const availableYears = [];
 
-  for (
-    let year = now.getFullYear();
-    year >= now.getFullYear() - 5;
-    year--
-  ) {
+  for (let year = now.getFullYear(); year >= now.getFullYear() - 5; year--) {
     availableYears.push(year);
   }
 
@@ -213,49 +185,37 @@ function Transactions() {
   // SELECTED MONTH NAME
   // ==================================================
 
-  const selectedMonthName =
-    monthNames[selectedMonth - 1];
+  const selectedMonthName = monthNames[selectedMonth - 1];
 
   // ==================================================
   // MONTH START / END
   // ==================================================
 
-  const monthStartDate =
-    `${selectedYear}-${String(
-      selectedMonth,
-    ).padStart(2, "0")}-01`;
+  const monthStartDate = `${selectedYear}-${String(selectedMonth).padStart(
+    2,
+    "0",
+  )}-01`;
 
-  const monthEndDay =
-    new Date(
-      selectedYear,
-      selectedMonth,
-      0,
-    ).getDate();
+  const monthEndDay = new Date(selectedYear, selectedMonth, 0).getDate();
 
-  const monthEndDate =
-    `${selectedYear}-${String(
-      selectedMonth,
-    ).padStart(2, "0")}-${String(
-      monthEndDay,
-    ).padStart(2, "0")}`;
+  const monthEndDate = `${selectedYear}-${String(selectedMonth).padStart(
+    2,
+    "0",
+  )}-${String(monthEndDay).padStart(2, "0")}`;
 
   // ==================================================
   // NOTIFY DASHBOARD
   // ==================================================
 
   function notifyTransactionsUpdated() {
-    window.dispatchEvent(
-      new Event("transactionsUpdated"),
-    );
+    window.dispatchEvent(new Event("transactionsUpdated"));
   }
 
   // ==================================================
   // LOAD TRANSACTIONS
   // ==================================================
 
-  async function loadTransactions(
-    showLoading = true,
-  ) {
+  async function loadTransactions(showLoading = true) {
     try {
       if (showLoading) {
         setLoading(true);
@@ -263,17 +223,11 @@ function Transactions() {
 
       setError("");
 
-      const data =
-        await apiRequest(
-          "/transactions",
-          {
-            cache: "no-store",
-          },
-        );
+      const data = await apiRequest("/transactions", {
+        cache: "no-store",
+      });
 
-      setTransactions(
-        data.transactions || [],
-      );
+      setTransactions(data.transactions || []);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -289,17 +243,11 @@ function Transactions() {
 
   async function loadCategories() {
     try {
-      const data =
-        await apiRequest(
-          "/categories",
-          {
-            cache: "no-store",
-          },
-        );
+      const data = await apiRequest("/categories", {
+        cache: "no-store",
+      });
 
-      setCategories(
-        data.categories || [],
-      );
+      setCategories(data.categories || []);
     } catch (error) {
       setError(error.message);
     }
@@ -311,10 +259,7 @@ function Transactions() {
 
   useEffect(() => {
     async function loadData() {
-      await Promise.all([
-        loadTransactions(true),
-        loadCategories(),
-      ]);
+      await Promise.all([loadTransactions(true), loadCategories()]);
     }
 
     loadData();
@@ -331,63 +276,35 @@ function Transactions() {
    */
 
   useEffect(() => {
-    const monthFromUrl =
-      Number(
-        searchParams.get("month"),
-      );
+    const monthFromUrl = Number(searchParams.get("month"));
 
-    const yearFromUrl =
-      Number(
-        searchParams.get("year"),
-      );
+    const yearFromUrl = Number(searchParams.get("year"));
 
-    const categoryFromUrl =
-      searchParams.get(
-        "category",
-      ) || "";
+    const categoryFromUrl = searchParams.get("category") || "";
 
-    const typeFromUrl =
-      searchParams.get("type") ||
-      "";
+    const typeFromUrl = searchParams.get("type") || "";
 
-    if (
-      monthFromUrl >= 1 &&
-      monthFromUrl <= 12
-    ) {
-      setSelectedMonth(
-        monthFromUrl,
-      );
+    if (monthFromUrl >= 1 && monthFromUrl <= 12) {
+      setSelectedMonth(monthFromUrl);
     }
 
     if (
-      yearFromUrl >=
-        now.getFullYear() - 5 &&
-      yearFromUrl <=
-        now.getFullYear() + 5
+      yearFromUrl >= now.getFullYear() - 5 &&
+      yearFromUrl <= now.getFullYear() + 5
     ) {
-      setSelectedYear(
-        yearFromUrl,
-      );
+      setSelectedYear(yearFromUrl);
     }
 
-    setSelectedCategory(
-      categoryFromUrl,
-    );
+    setSelectedCategory(categoryFromUrl);
 
-    setSelectedType(
-      typeFromUrl,
-    );
+    setSelectedType(typeFromUrl);
 
     /*
      * When category/month/year comes
      * from Budget, clear specific date.
      */
 
-    if (
-      monthFromUrl ||
-      yearFromUrl ||
-      categoryFromUrl
-    ) {
+    if (monthFromUrl || yearFromUrl || categoryFromUrl) {
       setSelectedDate("");
     }
   }, [searchParams]);
@@ -397,200 +314,129 @@ function Transactions() {
   // ==================================================
 
   useEffect(() => {
-    const restoredFormData =
-      location.state
-        ?.transactionFormData;
+    const restoredFormData = location.state?.transactionFormData;
 
     if (!restoredFormData) {
       return;
     }
 
-    setEditingTransaction(
-      null,
-    );
+    setEditingTransaction(null);
 
     setFormData({
-      title:
-        restoredFormData.title ||
-        "",
-      amount:
-        restoredFormData.amount ||
-        "",
-      type:
-        restoredFormData.type ||
-        "expense",
-      category:
-        restoredFormData.category ||
-        "",
-      paymentMethod:
-        restoredFormData.paymentMethod ||
-        "",
-      date:
-        restoredFormData.date ||
-        "",
-      note:
-        restoredFormData.note ||
-        "",
+      title: restoredFormData.title || "",
+      amount: restoredFormData.amount || "",
+      type: restoredFormData.type || "expense",
+      category: restoredFormData.category || "",
+      paymentMethod: restoredFormData.paymentMethod || "",
+      date: restoredFormData.date || "",
+      note: restoredFormData.note || "",
     });
 
     setError("");
     setShowForm(true);
 
-    navigate(
-      "/transactions",
-      {
-        replace: true,
-        state: null,
-      },
-    );
-  }, [
-    location.state,
-    navigate,
-  ]);
+    navigate("/transactions", {
+      replace: true,
+      state: null,
+    });
+  }, [location.state, navigate]);
 
   // ==================================================
   // FILTER TRANSACTIONS
   // ==================================================
 
-  const filteredTransactions =
-    transactions.filter(
-      (transaction) => {
+  const filteredTransactions = transactions.filter((transaction) => {
+    // --------------------------------------------
+    // DATE CHECK
+    // --------------------------------------------
 
-        // --------------------------------------------
-        // DATE CHECK
-        // --------------------------------------------
+    if (!transaction.date) {
+      return false;
+    }
 
-        if (!transaction.date) {
-          return false;
-        }
+    const transactionDate = new Date(transaction.date);
 
-        const transactionDate =
-          new Date(
-            transaction.date,
-          );
+    if (Number.isNaN(transactionDate.getTime())) {
+      return false;
+    }
 
-        if (
-          Number.isNaN(
-            transactionDate.getTime(),
-          )
-        ) {
-          return false;
-        }
+    // --------------------------------------------
+    // MONTH
+    // --------------------------------------------
 
-        // --------------------------------------------
-        // MONTH
-        // --------------------------------------------
+    if (transactionDate.getMonth() + 1 !== selectedMonth) {
+      return false;
+    }
 
-        if (
-          transactionDate.getMonth() +
-            1 !==
-          selectedMonth
-        ) {
-          return false;
-        }
+    // --------------------------------------------
+    // YEAR
+    // --------------------------------------------
 
-        // --------------------------------------------
-        // YEAR
-        // --------------------------------------------
+    if (transactionDate.getFullYear() !== selectedYear) {
+      return false;
+    }
 
-        if (
-          transactionDate.getFullYear() !==
-          selectedYear
-        ) {
-          return false;
-        }
+    // --------------------------------------------
+    // TYPE
+    // --------------------------------------------
 
-        // --------------------------------------------
-        // TYPE
-        // --------------------------------------------
+    if (selectedType && transaction.type !== selectedType) {
+      return false;
+    }
 
-        if (
-          selectedType &&
-          transaction.type !==
-            selectedType
-        ) {
-          return false;
-        }
+    // --------------------------------------------
+    // CATEGORY
+    // --------------------------------------------
 
-        // --------------------------------------------
-        // CATEGORY
-        // --------------------------------------------
+    if (selectedCategory) {
+      const transactionCategoryId =
+        transaction.category?._id || transaction.category;
 
-        if (
-          selectedCategory
-        ) {
-          const transactionCategoryId =
-            transaction.category?._id ||
-            transaction.category;
+      if (transactionCategoryId !== selectedCategory) {
+        return false;
+      }
+    }
 
-          if (
-            transactionCategoryId !==
-            selectedCategory
-          ) {
-            return false;
-          }
-        }
+    // --------------------------------------------
+    // SPECIFIC DATE
+    // --------------------------------------------
 
-        // --------------------------------------------
-        // SPECIFIC DATE
-        // --------------------------------------------
+    if (!selectedDate) {
+      return true;
+    }
 
-        if (!selectedDate) {
-          return true;
-        }
+    const selectedDateObject = new Date(selectedDate + "T00:00:00");
 
-        const selectedDateObject =
-          new Date(
-            selectedDate +
-              "T00:00:00",
-          );
+    if (Number.isNaN(selectedDateObject.getTime())) {
+      return false;
+    }
 
-        if (
-          Number.isNaN(
-            selectedDateObject.getTime(),
-          )
-        ) {
-          return false;
-        }
-
-        return (
-          transactionDate.getFullYear() ===
-            selectedDateObject.getFullYear() &&
-          transactionDate.getMonth() ===
-            selectedDateObject.getMonth() &&
-          transactionDate.getDate() ===
-            selectedDateObject.getDate()
-        );
-      },
+    return (
+      transactionDate.getFullYear() === selectedDateObject.getFullYear() &&
+      transactionDate.getMonth() === selectedDateObject.getMonth() &&
+      transactionDate.getDate() === selectedDateObject.getDate()
     );
+  });
 
   // ==================================================
   // SORT
   // ==================================================
 
-  const sortedTransactions =
-    [...filteredTransactions].sort(
-      (a, b) =>
-        new Date(b.date) -
-        new Date(a.date),
-    );
+  const sortedTransactions = [...filteredTransactions].sort(
+    (a, b) => new Date(b.date) - new Date(a.date),
+  );
 
   // ==================================================
   // HANDLE INPUT CHANGE
   // ==================================================
 
   function handleChange(event) {
-    const {
-      name,
-      value,
-    } = event.target;
+    const { name, value } = event.target;
 
-    setFormData(
-      (previousData) => ({
-        ...previousData,
-        [name]: value,
-      }),
-    );
+    setFormData((previousData) => ({
+      ...previousData,
+      [name]: value,
+    }));
   }
 
   // ==================================================
@@ -608,9 +454,7 @@ function Transactions() {
       note: "",
     });
 
-    setEditingTransaction(
-      null,
-    );
+    setEditingTransaction(null);
   }
 
   // ==================================================
@@ -628,43 +472,21 @@ function Transactions() {
   // EDIT TRANSACTION
   // ==================================================
 
-  function handleEditTransaction(
-    transaction,
-  ) {
+  function handleEditTransaction(transaction) {
     setError("");
 
-    setEditingTransaction(
-      transaction,
-    );
+    setEditingTransaction(transaction);
 
     setFormData({
-      title:
-        transaction.title ||
-        "",
-      amount:
-        transaction.amount ??
-        "",
-      type:
-        transaction.type ||
-        "expense",
-      category:
-        transaction.category?._id ||
-        transaction.category ||
-        "",
-      paymentMethod:
-        transaction.paymentMethod ||
-        "",
-      date:
-        transaction.date
-          ? new Date(
-              transaction.date,
-            )
-              .toISOString()
-              .split("T")[0]
-          : "",
-      note:
-        transaction.note ||
-        "",
+      title: transaction.title || "",
+      amount: transaction.amount ?? "",
+      type: transaction.type || "expense",
+      category: transaction.category?._id || transaction.category || "",
+      paymentMethod: transaction.paymentMethod || "",
+      date: transaction.date
+        ? new Date(transaction.date).toISOString().split("T")[0]
+        : "",
+      note: transaction.note || "",
     });
 
     setShowForm(true);
@@ -675,56 +497,33 @@ function Transactions() {
   // ==================================================
 
   useEffect(() => {
-    const editId =
-      searchParams.get(
-        "edit",
-      );
+    const editId = searchParams.get("edit");
 
-    if (
-      !editId ||
-      transactions.length === 0
-    ) {
+    if (!editId || transactions.length === 0) {
       return;
     }
 
-    const transaction =
-      transactions.find(
-        (item) =>
-          item._id === editId,
-      );
+    const transaction = transactions.find((item) => item._id === editId);
 
     if (transaction) {
-      handleEditTransaction(
-        transaction,
-      );
+      handleEditTransaction(transaction);
 
       setSearchParams({});
     }
-  }, [
-    transactions,
-    searchParams,
-    setSearchParams,
-  ]);
+  }, [transactions, searchParams, setSearchParams]);
 
   // ==================================================
   // AUTOMATIC ADD FROM DASHBOARD
   // ==================================================
 
   useEffect(() => {
-    const addTransaction =
-      searchParams.get(
-        "add",
-      );
+    const addTransaction = searchParams.get("add");
 
-    if (
-      addTransaction !== "true"
-    ) {
+    if (addTransaction !== "true") {
       return;
     }
 
-    setEditingTransaction(
-      null,
-    );
+    setEditingTransaction(null);
 
     setFormData({
       title: "",
@@ -740,23 +539,16 @@ function Transactions() {
     setShowForm(true);
 
     setSearchParams({});
-  }, [
-    searchParams,
-    setSearchParams,
-  ]);
+  }, [searchParams, setSearchParams]);
 
   // ==================================================
   // DELETE TRANSACTION
   // ==================================================
 
-  function handleDeleteTransaction(
-    transaction,
-  ) {
+  function handleDeleteTransaction(transaction) {
     setError("");
 
-    setTransactionToDelete(
-      transaction,
-    );
+    setTransactionToDelete(transaction);
 
     setShowDeleteModal(true);
   }
@@ -766,10 +558,7 @@ function Transactions() {
   // ==================================================
 
   async function confirmDeleteTransaction() {
-    if (
-      !transactionToDelete ||
-      deleting
-    ) {
+    if (!transactionToDelete || deleting) {
       return;
     }
 
@@ -777,24 +566,15 @@ function Transactions() {
     setError("");
 
     try {
-      await apiRequest(
-        `/transactions/${transactionToDelete._id}`,
-        {
-          method: "DELETE",
-        },
-      );
+      await apiRequest(`/transactions/${transactionToDelete._id}`, {
+        method: "DELETE",
+      });
 
-      await loadTransactions(
-        false,
-      );
+      await loadTransactions(false);
 
-      setShowDeleteModal(
-        false,
-      );
+      setShowDeleteModal(false);
 
-      setTransactionToDelete(
-        null,
-      );
+      setTransactionToDelete(null);
 
       notifyTransactionsUpdated();
     } catch (error) {
@@ -809,25 +589,19 @@ function Transactions() {
   // ==================================================
 
   function handleAddCategory() {
-    navigate(
-      "/categories",
-      {
-        state: {
-          from: "transaction",
-          transactionFormData:
-            formData,
-        },
+    navigate("/categories", {
+      state: {
+        from: "transaction",
+        transactionFormData: formData,
       },
-    );
+    });
   }
 
   // ==================================================
   // SUBMIT TRANSACTION
   // ==================================================
 
-  async function handleSubmit(
-    event,
-  ) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     if (submitting) {
@@ -842,25 +616,15 @@ function Transactions() {
       !formData.category ||
       !formData.paymentMethod
     ) {
-      setError(
-        "Please fill in all required fields.",
-      );
+      setError("Please fill in all required fields.");
 
       return;
     }
 
-    const amount =
-      Number(
-        formData.amount,
-      );
+    const amount = Number(formData.amount);
 
-    if (
-      !Number.isFinite(amount) ||
-      amount <= 0
-    ) {
-      setError(
-        "Please enter a valid amount.",
-      );
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Please enter a valid amount.");
 
       return;
     }
@@ -869,62 +633,42 @@ function Transactions() {
 
     try {
       const transactionData = {
-        title:
-          formData.title.trim(),
+        title: formData.title.trim(),
 
         amount,
 
-        type:
-          formData.type,
+        type: formData.type,
 
-        category:
-          formData.category,
+        category: formData.category,
 
-        paymentMethod:
-          formData.paymentMethod,
+        paymentMethod: formData.paymentMethod,
 
         ...(formData.date
           ? {
-              date:
-                formData.date,
+              date: formData.date,
             }
           : {}),
 
         ...(formData.note.trim()
           ? {
-              note:
-                formData.note.trim(),
+              note: formData.note.trim(),
             }
           : {}),
       };
 
-      if (
-        editingTransaction
-      ) {
-        await apiRequest(
-          `/transactions/${editingTransaction._id}`,
-          {
-            method: "PUT",
-            body: JSON.stringify(
-              transactionData,
-            ),
-          },
-        );
+      if (editingTransaction) {
+        await apiRequest(`/transactions/${editingTransaction._id}`, {
+          method: "PUT",
+          body: JSON.stringify(transactionData),
+        });
       } else {
-        await apiRequest(
-          "/transactions",
-          {
-            method: "POST",
-            body: JSON.stringify(
-              transactionData,
-            ),
-          },
-        );
+        await apiRequest("/transactions", {
+          method: "POST",
+          body: JSON.stringify(transactionData),
+        });
       }
 
-      await loadTransactions(
-        false,
-      );
+      await loadTransactions(false);
 
       setShowForm(false);
 
@@ -949,26 +693,19 @@ function Transactions() {
   // FILTER CATEGORIES BY TYPE
   // ==================================================
 
-  const filteredCategories =
-    categories.filter(
-      (category) =>
-        category.type ===
-        formData.type,
-    );
+  const filteredCategories = categories.filter(
+    (category) => category.type === formData.type,
+  );
 
   // ==================================================
   // SELECTED CATEGORY NAME
   // ==================================================
 
-  const selectedCategoryObject =
-    categories.find(
-      (category) =>
-        category._id ===
-        selectedCategory,
-    );
+  const selectedCategoryObject = categories.find(
+    (category) => category._id === selectedCategory,
+  );
 
-  const selectedCategoryName =
-    selectedCategoryObject?.name;
+  const selectedCategoryName = selectedCategoryObject?.name;
 
   // ==================================================
   // CLOSE FORM
@@ -992,22 +729,13 @@ function Transactions() {
      * Only remove "add" and "edit".
      */
 
-    const preservedParams =
-      new URLSearchParams(
-        searchParams,
-      );
+    const preservedParams = new URLSearchParams(searchParams);
 
-    preservedParams.delete(
-      "add",
-    );
+    preservedParams.delete("add");
 
-    preservedParams.delete(
-      "edit",
-    );
+    preservedParams.delete("edit");
 
-    setSearchParams(
-      preservedParams,
-    );
+    setSearchParams(preservedParams);
   }
 
   // ==================================================
@@ -1025,14 +753,9 @@ function Transactions() {
   function clearCategoryFilter() {
     setSelectedCategory("");
 
-    const params =
-      new URLSearchParams(
-        searchParams,
-      );
+    const params = new URLSearchParams(searchParams);
 
-    params.delete(
-      "category",
-    );
+    params.delete("category");
 
     setSearchParams(params);
   }
@@ -1046,28 +769,17 @@ function Transactions() {
       return `${selectedMonthName} ${selectedYear}`;
     }
 
-    const date =
-      new Date(
-        selectedDate +
-          "T00:00:00",
-      );
+    const date = new Date(selectedDate + "T00:00:00");
 
-    if (
-      Number.isNaN(
-        date.getTime(),
-      )
-    ) {
+    if (Number.isNaN(date.getTime())) {
       return `${selectedMonthName} ${selectedYear}`;
     }
 
-    return date.toLocaleDateString(
-      "en-IN",
-      {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      },
-    );
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
   }
 
   // ==================================================
@@ -1077,60 +789,41 @@ function Transactions() {
   if (loading) {
     return (
       <div className="transactions-page">
-
         <div className="transactions-header-skeleton">
-
           <div className="skeleton-text skeleton-title" />
 
           <div className="skeleton-button" />
-
         </div>
 
         <div className="transaction-filter-card skeleton-filter">
-
           <div className="skeleton-text skeleton-subtitle" />
 
           <div className="skeleton-filters">
-
             <div className="skeleton-select" />
 
             <div className="skeleton-select" />
 
             <div className="skeleton-select" />
-
           </div>
-
         </div>
 
         <div className="transactions-list-card skeleton-list">
-
           {Array.from({
             length: 5,
-          }).map(
-            (_, i) => (
-              <div
-                key={i}
-                className="skeleton-transaction-item"
-              >
+          }).map((_, i) => (
+            <div key={i} className="skeleton-transaction-item">
+              <div className="skeleton-icon" />
 
-                <div className="skeleton-icon" />
+              <div className="skeleton-details">
+                <div className="skeleton-text skeleton-line-short" />
 
-                <div className="skeleton-details">
-
-                  <div className="skeleton-text skeleton-line-short" />
-
-                  <div className="skeleton-text skeleton-line-long" />
-
-                </div>
-
-                <div className="skeleton-amount" />
-
+                <div className="skeleton-text skeleton-line-long" />
               </div>
-            ),
-          )}
 
+              <div className="skeleton-amount" />
+            </div>
+          ))}
         </div>
-
       </div>
     );
   }
@@ -1139,38 +832,26 @@ function Transactions() {
   // ERROR STATE
   // ==================================================
 
-  if (
-    error &&
-    !showForm &&
-    !showDeleteModal
-  ) {
+  if (error && !showForm && !showDeleteModal) {
     return (
       <div className="transactions-page">
-
         <div className="transactions-error-state">
-
           <div className="error-icon-wrapper">
             <Receipt size={40} />
           </div>
 
-          <h2>
-            Something went wrong
-          </h2>
+          <h2>Something went wrong</h2>
 
           <p>{error}</p>
 
           <button
             type="button"
-            onClick={() =>
-              loadTransactions(true)
-            }
+            onClick={() => loadTransactions(true)}
             className="retry-button"
           >
             Try Again
           </button>
-
         </div>
-
       </div>
     );
   }
@@ -1181,41 +862,36 @@ function Transactions() {
 
   return (
     <div className="transactions-page">
-
       {/* ==================================================
           HEADER
           ================================================== */}
 
       <div className="transactions-header">
-
         <div className="transactions-header-left">
+          <span className="transactions-label">MONEY ACTIVITY</span>
 
-          <span className="transactions-label">
-            MONEY ACTIVITY
-          </span>
+          <h1>Transactions</h1>
 
-          <h1>
-            Transactions
-          </h1>
-
-          <p>
-            Manage and review your
-            income and expenses.
-          </p>
-
+          <p>Manage and review your income and expenses.</p>
         </div>
 
         <button
           type="button"
           className="add-transaction-button"
-          onClick={
-            handleAddTransaction
-          }
+          onClick={handleAddTransaction}
         >
           <Plus size={18} />
           Add Transaction
         </button>
 
+        <button
+          type="button"
+          className="transactions-import-button"
+          onClick={() => navigate("/transactions/import")}
+        >
+          <Upload size={17} />
+          Import Bank CSV
+        </button>
       </div>
 
       {/* ==================================================
@@ -1223,275 +899,121 @@ function Transactions() {
           ================================================== */}
 
       <section className="transaction-filter-card">
-
         <div className="transaction-filter-heading">
-
           <div>
-
-            <h2>
-              Transaction History
-            </h2>
+            <h2>Transaction History</h2>
 
             <p>
-              Choose a month and
-              year. Select a date
-              only if you want to
-              see one specific day.
+              Choose a month and year. Select a date only if you want to see one
+              specific day.
             </p>
-
           </div>
 
           <div className="transaction-count">
-
-            <span className="count-number">
-              {
-                sortedTransactions.length
-              }
-            </span>
+            <span className="count-number">{sortedTransactions.length}</span>
 
             <span className="count-label">
-              {
-                sortedTransactions.length ===
-                1
-                  ? "transaction"
-                  : "transactions"
-              }
+              {sortedTransactions.length === 1 ? "transaction" : "transactions"}
             </span>
-
           </div>
-
         </div>
 
         <div className="transaction-filters">
-
           {/* MONTH */}
 
           <div className="filter-group">
-
-            <label>
-              Month
-            </label>
+            <label>Month</label>
 
             <div className="custom-select-wrapper">
-
               <select
-                value={
-                  selectedMonth
-                }
-                onChange={(
-                  event,
-                ) => {
+                value={selectedMonth}
+                onChange={(event) => {
+                  setSelectedMonth(Number(event.target.value));
 
-                  setSelectedMonth(
-                    Number(
-                      event.target
-                        .value,
-                    ),
-                  );
-
-                  setSelectedDate(
-                    "",
-                  );
+                  setSelectedDate("");
                 }}
               >
-
-                {monthNames.map(
-                  (
-                    monthName,
-                    index,
-                  ) => (
-                    <option
-                      key={
-                        monthName
-                      }
-                      value={
-                        index + 1
-                      }
-                    >
-                      {
-                        monthName
-                      }
-                    </option>
-                  ),
-                )}
-
+                {monthNames.map((monthName, index) => (
+                  <option key={monthName} value={index + 1}>
+                    {monthName}
+                  </option>
+                ))}
               </select>
 
-              <ChevronDown
-                size={16}
-                className="select-chevron"
-              />
-
+              <ChevronDown size={16} className="select-chevron" />
             </div>
-
           </div>
 
           {/* YEAR */}
 
           <div className="filter-group">
-
-            <label>
-              Year
-            </label>
+            <label>Year</label>
 
             <div className="custom-select-wrapper">
-
               <select
-                value={
-                  selectedYear
-                }
-                onChange={(
-                  event,
-                ) => {
+                value={selectedYear}
+                onChange={(event) => {
+                  setSelectedYear(Number(event.target.value));
 
-                  setSelectedYear(
-                    Number(
-                      event.target
-                        .value,
-                    ),
-                  );
-
-                  setSelectedDate(
-                    "",
-                  );
+                  setSelectedDate("");
                 }}
               >
-
-                {availableYears.map(
-                  (yearValue) => (
-                    <option
-                      key={
-                        yearValue
-                      }
-                      value={
-                        yearValue
-                      }
-                    >
-                      {
-                        yearValue
-                      }
-                    </option>
-                  ),
-                )}
-
+                {availableYears.map((yearValue) => (
+                  <option key={yearValue} value={yearValue}>
+                    {yearValue}
+                  </option>
+                ))}
               </select>
 
-              <ChevronDown
-                size={16}
-                className="select-chevron"
-              />
-
+              <ChevronDown size={16} className="select-chevron" />
             </div>
-
           </div>
 
           {/* CATEGORY */}
 
           <div className="filter-group">
-
-            <label>
-              Category
-            </label>
+            <label>Category</label>
 
             <div className="custom-select-wrapper">
-
               <select
-                value={
-                  selectedCategory
-                }
-                onChange={(
-                  event,
-                ) => {
-
-                  setSelectedCategory(
-                    event.target
-                      .value,
-                  );
+                value={selectedCategory}
+                onChange={(event) => {
+                  setSelectedCategory(event.target.value);
                 }}
               >
-
-                <option value="">
-                  All Categories
-                </option>
+                <option value="">All Categories</option>
 
                 {categories
-                  .filter(
-                    (
-                      category,
-                    ) =>
-                      category.type ===
-                      "expense",
-                  )
-                  .map(
-                    (
-                      category,
-                    ) => (
-                      <option
-                        key={
-                          category._id
-                        }
-                        value={
-                          category._id
-                        }
-                      >
-                        {
-                          category.name
-                        }
-                      </option>
-                    ),
-                  )}
-
+                  .filter((category) => category.type === "expense")
+                  .map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
               </select>
 
-              <ChevronDown
-                size={16}
-                className="select-chevron"
-              />
-
+              <ChevronDown size={16} className="select-chevron" />
             </div>
-
           </div>
 
           {/* DATE */}
 
           <div className="filter-group date-filter-group">
-
             <label>
-              Specific Date{" "}
-              <span className="optional-badge">
-                Optional
-              </span>
+              Specific Date <span className="optional-badge">Optional</span>
             </label>
 
             <div className="date-input-wrapper">
-
-              <CalendarDays
-                size={17}
-              />
+              <CalendarDays size={17} />
 
               <input
                 type="date"
-                value={
-                  selectedDate
-                }
-                min={
-                  monthStartDate
-                }
-                max={
-                  monthEndDate
-                }
-                onChange={(
-                  event,
-                ) =>
-                  setSelectedDate(
-                    event.target
-                      .value,
-                  )
-                }
+                value={selectedDate}
+                min={monthStartDate}
+                max={monthEndDate}
+                onChange={(event) => setSelectedDate(event.target.value)}
               />
-
             </div>
-
           </div>
 
           {/* CLEAR DATE */}
@@ -1500,64 +1022,41 @@ function Transactions() {
             <button
               type="button"
               className="clear-date-button"
-              onClick={
-                clearDateFilter
-              }
+              onClick={clearDateFilter}
             >
               <X size={14} />
               Clear Date
             </button>
           )}
-
         </div>
 
         {/* ACTIVE FILTER */}
 
         <div className="active-filter">
-
           <Filter size={14} />
 
-          <span>
-            Showing:
-          </span>
+          <span>Showing:</span>
 
-          <strong>
-            {
-              getFormattedSelectedDate()
-            }
-          </strong>
+          <strong>{getFormattedSelectedDate()}</strong>
 
           {selectedCategoryName && (
             <>
-              <span>
-                ·
-              </span>
+              <span>·</span>
 
-              <strong>
-                {
-                  selectedCategoryName
-                }
-              </strong>
+              <strong>{selectedCategoryName}</strong>
             </>
           )}
 
           {selectedType && (
             <>
-              <span>
-                ·
-              </span>
+              <span>·</span>
 
               <strong>
-                {selectedType ===
-                "expense"
-                  ? "Expenses"
-                  : "Income"}
+                {selectedType === "expense" ? "Expenses" : "Income"}
               </strong>
             </>
           )}
-
         </div>
-
       </section>
 
       {/* ==================================================
@@ -1565,40 +1064,21 @@ function Transactions() {
           ================================================== */}
 
       <section className="transactions-list-card">
-
-        {sortedTransactions.length ===
-        0 ? (
-
+        {sortedTransactions.length === 0 ? (
           <div className="transactions-empty">
-
             <div className="transactions-empty-icon">
-              <CalendarDays
-                size={32}
-              />
+              <CalendarDays size={32} />
             </div>
 
-            <h2>
-              No transactions found
-            </h2>
+            <h2>No transactions found</h2>
 
             <p>
-              There are no
-              transactions for{" "}
-              <strong>
-                {
-                  getFormattedSelectedDate()
-                }
-              </strong>
-
+              There are no transactions for{" "}
+              <strong>{getFormattedSelectedDate()}</strong>
               {selectedCategoryName && (
                 <>
                   {" "}
-                  in{" "}
-                  <strong>
-                    {
-                      selectedCategoryName
-                    }
-                  </strong>
+                  in <strong>{selectedCategoryName}</strong>
                 </>
               )}
               .
@@ -1606,192 +1086,110 @@ function Transactions() {
 
             <button
               type="button"
-              onClick={
-                handleAddTransaction
-              }
+              onClick={handleAddTransaction}
               className="empty-add-button"
             >
               <Plus size={16} />
               Add Transaction
             </button>
-
           </div>
-
         ) : (
-
           <div className="transactions-list">
+            {sortedTransactions.map((transaction, index) => {
+              const transactionDate = new Date(transaction.date);
 
-            {sortedTransactions.map(
-              (
-                transaction,
-                index,
-              ) => {
+              const formattedDate = transactionDate.toLocaleDateString(
+                "en-IN",
+                {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                },
+              );
 
-                const transactionDate =
-                  new Date(
-                    transaction.date,
-                  );
+              return (
+                <div
+                  className="transaction-item"
+                  key={transaction._id}
+                  style={{
+                    animationDelay: `${index * 0.05}s`,
+                  }}
+                >
+                  {/* LEFT */}
 
-                const formattedDate =
-                  transactionDate.toLocaleDateString(
-                    "en-IN",
-                    {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    },
-                  );
-
-                return (
-                  <div
-                    className="transaction-item"
-                    key={
-                      transaction._id
-                    }
-                    style={{
-                      animationDelay: `${index * 0.05}s`,
-                    }}
-                  >
-
-                    {/* LEFT */}
-
-                    <div className="transaction-main">
-
-                      <div
-                        className={
-                          transaction.type ===
-                          "income"
-                            ? "transaction-type-icon income-icon"
-                            : "transaction-type-icon expense-icon"
-                        }
-                      >
-
-                        {transaction.type ===
-                        "income" ? (
-                          <Wallet
-                            size={18}
-                          />
-                        ) : (
-                          <Receipt
-                            size={18}
-                          />
-                        )}
-
-                      </div>
-
-                      <div className="transaction-details">
-
-                        <h3>
-                          {
-                            transaction.title
-                          }
-                        </h3>
-
-                        <p>
-
-                          {
-                            transaction
-                              .category
-                              ?.name ||
-                            "Unknown category"
-                          }
-
-                          <span className="dot-separator">
-                            ·
-                          </span>
-
-                          {
-                            transaction.paymentMethod
-                          }
-
-                        </p>
-
-                        <span className="transaction-date">
-
-                          <CalendarDays
-                            size={13}
-                          />
-
-                          {
-                            formattedDate
-                          }
-
-                        </span>
-
-                      </div>
-
+                  <div className="transaction-main">
+                    <div
+                      className={
+                        transaction.type === "income"
+                          ? "transaction-type-icon income-icon"
+                          : "transaction-type-icon expense-icon"
+                      }
+                    >
+                      {transaction.type === "income" ? (
+                        <Wallet size={18} />
+                      ) : (
+                        <Receipt size={18} />
+                      )}
                     </div>
 
-                    {/* RIGHT */}
+                    <div className="transaction-details">
+                      <h3>{transaction.title}</h3>
 
-                    <div className="transaction-right">
+                      <p>
+                        {transaction.category?.name || "Unknown category"}
 
-                      <strong
-                        className={
-                          transaction.type ===
-                          "income"
-                            ? "income-amount"
-                            : "expense-amount"
-                        }
-                      >
+                        <span className="dot-separator">·</span>
 
-                        {transaction.type ===
-                        "income"
-                          ? "+"
-                          : "-"}
-                        ₹
-                        {Number(
-                          transaction.amount,
-                        ).toLocaleString(
-                          "en-IN",
-                        )}
+                        {transaction.paymentMethod}
+                      </p>
 
-                      </strong>
+                      <span className="transaction-date">
+                        <CalendarDays size={13} />
 
-                      <div className="transaction-actions">
-
-                        <button
-                          type="button"
-                          title="Edit transaction"
-                          onClick={() =>
-                            handleEditTransaction(
-                              transaction,
-                            )
-                          }
-                          className="action-btn edit-btn"
-                        >
-                          <Pencil
-                            size={16}
-                          />
-                        </button>
-
-                        <button
-                          type="button"
-                          title="Delete transaction"
-                          onClick={() =>
-                            handleDeleteTransaction(
-                              transaction,
-                            )
-                          }
-                          className="action-btn delete-btn"
-                        >
-                          <Trash2
-                            size={16}
-                          />
-                        </button>
-
-                      </div>
-
+                        {formattedDate}
+                      </span>
                     </div>
-
                   </div>
-                );
-              },
-            )}
 
+                  {/* RIGHT */}
+
+                  <div className="transaction-right">
+                    <strong
+                      className={
+                        transaction.type === "income"
+                          ? "income-amount"
+                          : "expense-amount"
+                      }
+                    >
+                      {transaction.type === "income" ? "+" : "-"}₹
+                      {Number(transaction.amount).toLocaleString("en-IN")}
+                    </strong>
+
+                    <div className="transaction-actions">
+                      <button
+                        type="button"
+                        title="Edit transaction"
+                        onClick={() => handleEditTransaction(transaction)}
+                        className="action-btn edit-btn"
+                      >
+                        <Pencil size={16} />
+                      </button>
+
+                      <button
+                        type="button"
+                        title="Delete transaction"
+                        onClick={() => handleDeleteTransaction(transaction)}
+                        className="action-btn delete-btn"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
-
       </section>
 
       {/* ==================================================
@@ -1802,28 +1200,19 @@ function Transactions() {
         <div
           className="modal-overlay"
           onClick={(event) => {
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
+            if (event.target === event.currentTarget) {
               closeForm();
             }
           }}
         >
-
           <div className="transaction-form">
-
             {/* CLOSE */}
 
             <button
               type="button"
               className="modal-close"
-              onClick={
-                closeForm
-              }
-              disabled={
-                submitting
-              }
+              onClick={closeForm}
+              disabled={submitting}
             >
               <X size={20} />
             </button>
@@ -1831,17 +1220,12 @@ function Transactions() {
             {/* HEADER */}
 
             <div className="transaction-form-header">
-
               <span className="form-label">
-                {editingTransaction
-                  ? "UPDATE TRANSACTION"
-                  : "NEW TRANSACTION"}
+                {editingTransaction ? "UPDATE TRANSACTION" : "NEW TRANSACTION"}
               </span>
 
               <h2>
-                {editingTransaction
-                  ? "Edit Transaction"
-                  : "Add Transaction"}
+                {editingTransaction ? "Edit Transaction" : "Add Transaction"}
               </h2>
 
               <p>
@@ -1849,109 +1233,64 @@ function Transactions() {
                   ? "Update the details of your transaction."
                   : "Record your income or expense."}
               </p>
-
             </div>
 
             {/* ERROR */}
 
-            {error && (
-              <p className="form-error">
-                {error}
-              </p>
-            )}
+            {error && <p className="form-error">{error}</p>}
 
-            <form
-              onSubmit={
-                handleSubmit
-              }
-            >
-
+            <form onSubmit={handleSubmit}>
               {/* TITLE */}
 
               <div className="form-group">
-
-                <label>
-                  Title
-                </label>
+                <label>Title</label>
 
                 <input
                   type="text"
                   name="title"
-                  value={
-                    formData.title
-                  }
-                  onChange={
-                    handleChange
-                  }
+                  value={formData.title}
+                  onChange={handleChange}
                   placeholder="e.g. Grocery shopping"
                   className="form-input"
                 />
-
               </div>
 
               {/* AMOUNT */}
 
               <div className="form-group">
-
-                <label>
-                  Amount
-                </label>
+                <label>Amount</label>
 
                 <div className="amount-input-wrapper">
-
-                  <span className="currency-symbol">
-                    ₹
-                  </span>
+                  <span className="currency-symbol">₹</span>
 
                   <input
                     type="number"
                     name="amount"
-                    value={
-                      formData.amount
-                    }
-                    onChange={
-                      handleChange
-                    }
+                    value={formData.amount}
+                    onChange={handleChange}
                     placeholder="Enter amount"
                     min="0"
                     step="0.01"
                     className="form-input amount-input"
                   />
-
                 </div>
-
               </div>
 
               {/* TYPE */}
 
               <div className="form-group">
-
-                <label>
-                  Type
-                </label>
+                <label>Type</label>
 
                 <div className="type-toggle">
-
                   <button
                     type="button"
-                    className={
-                      formData.type ===
-                      "expense"
-                        ? "active"
-                        : ""
-                    }
+                    className={formData.type === "expense" ? "active" : ""}
                     onClick={() => {
-
-                      setFormData(
-                        (
-                          previousData,
-                        ) => ({
-                          ...previousData,
-                          type: "expense",
-                          category: "",
-                        }),
-                      );
-
+                      setFormData((previousData) => ({
+                        ...previousData,
+                        type: "expense",
+                        category: "",
+                      }));
                     }}
                   >
                     Expense
@@ -1959,235 +1298,126 @@ function Transactions() {
 
                   <button
                     type="button"
-                    className={
-                      formData.type ===
-                      "income"
-                        ? "active"
-                        : ""
-                    }
+                    className={formData.type === "income" ? "active" : ""}
                     onClick={() => {
-
-                      setFormData(
-                        (
-                          previousData,
-                        ) => ({
-                          ...previousData,
-                          type: "income",
-                          category: "",
-                        }),
-                      );
-
+                      setFormData((previousData) => ({
+                        ...previousData,
+                        type: "income",
+                        category: "",
+                      }));
                     }}
                   >
                     Income
                   </button>
-
                 </div>
-
               </div>
 
               {/* CATEGORY */}
 
               <div className="form-group">
-
-                <label>
-                  Category
-                </label>
+                <label>Category</label>
 
                 <div className="custom-select-wrapper">
-
                   <select
                     name="category"
-                    value={
-                      formData.category
-                    }
-                    onChange={(
-                      event,
-                    ) => {
+                    value={formData.category}
+                    onChange={(event) => {
+                      const value = event.target.value;
 
-                      const value =
-                        event.target
-                          .value;
-
-                      if (
-                        value ===
-                        "other"
-                      ) {
+                      if (value === "other") {
                         handleAddCategory();
                         return;
                       }
 
-                      setFormData(
-                        (
-                          previousData,
-                        ) => ({
-                          ...previousData,
-                          category:
-                            value,
-                        }),
-                      );
-
+                      setFormData((previousData) => ({
+                        ...previousData,
+                        category: value,
+                      }));
                     }}
                   >
+                    <option value="">Select category</option>
 
-                    <option value="">
-                      Select category
-                    </option>
+                    {filteredCategories.map((category) => (
+                      <option key={category._id} value={category._id}>
+                        {category.name}
+                      </option>
+                    ))}
 
-                    {filteredCategories.map(
-                      (
-                        category,
-                      ) => (
-                        <option
-                          key={
-                            category._id
-                          }
-                          value={
-                            category._id
-                          }
-                        >
-                          {
-                            category.name
-                          }
-                        </option>
-                      ),
-                    )}
-
-                    <option value="other">
-                      + Add new category
-                    </option>
-
+                    <option value="other">+ Add new category</option>
                   </select>
 
-                  <ChevronDown
-                    size={16}
-                    className="select-chevron"
-                  />
-
+                  <ChevronDown size={16} className="select-chevron" />
                 </div>
-
               </div>
 
               {/* PAYMENT METHOD */}
 
               <div className="form-group">
-
-                <label>
-                  Payment Method
-                </label>
+                <label>Payment Method</label>
 
                 <div className="custom-select-wrapper">
-
                   <select
                     name="paymentMethod"
-                    value={
-                      formData.paymentMethod
-                    }
-                    onChange={
-                      handleChange
-                    }
+                    value={formData.paymentMethod}
+                    onChange={handleChange}
                   >
+                    <option value="">Select payment method</option>
 
-                    <option value="">
-                      Select payment method
-                    </option>
+                    <option value="Cash">Cash</option>
 
-                    <option value="Cash">
-                      Cash
-                    </option>
+                    <option value="Debit Card">Debit Card</option>
 
-                    <option value="Debit Card">
-                      Debit Card
-                    </option>
+                    <option value="Credit Card">Credit Card</option>
 
-                    <option value="Credit Card">
-                      Credit Card
-                    </option>
+                    <option value="UPI">UPI</option>
 
-                    <option value="UPI">
-                      UPI
-                    </option>
-
-                    <option value="Bank Transfer">
-                      Bank Transfer
-                    </option>
-
+                    <option value="Bank Transfer">Bank Transfer</option>
                   </select>
 
-                  <ChevronDown
-                    size={16}
-                    className="select-chevron"
-                  />
-
+                  <ChevronDown size={16} className="select-chevron" />
                 </div>
-
               </div>
 
               {/* DATE */}
 
               <div className="form-group">
-
-                <label>
-                  Transaction Date
-                </label>
+                <label>Transaction Date</label>
 
                 <input
                   type="date"
                   name="date"
-                  value={
-                    formData.date
-                  }
-                  onChange={
-                    handleChange
-                  }
+                  value={formData.date}
+                  onChange={handleChange}
                   className="form-input"
                 />
 
-                <small>
-                  Leave empty to use
-                  today's date.
-                </small>
-
+                <small>Leave empty to use today's date.</small>
               </div>
 
               {/* NOTE */}
 
               <div className="form-group">
-
                 <label>
-                  Note{" "}
-                  <span className="optional-text">
-                    (Optional)
-                  </span>
+                  Note <span className="optional-text">(Optional)</span>
                 </label>
 
                 <textarea
                   name="note"
-                  value={
-                    formData.note
-                  }
-                  onChange={
-                    handleChange
-                  }
+                  value={formData.note}
+                  onChange={handleChange}
                   placeholder="Add a note about this transaction..."
                   rows="3"
                   className="form-textarea"
                 />
-
               </div>
 
               {/* BUTTONS */}
 
               <div className="transaction-form-actions">
-
                 <button
                   type="button"
-                  onClick={
-                    closeForm
-                  }
-                  disabled={
-                    submitting
-                  }
+                  onClick={closeForm}
+                  disabled={submitting}
                   className="btn-secondary"
                 >
                   Cancel
@@ -2195,9 +1425,7 @@ function Transactions() {
 
                 <button
                   type="submit"
-                  disabled={
-                    submitting
-                  }
+                  disabled={submitting}
                   className="btn-primary"
                 >
                   {submitting
@@ -2208,13 +1436,9 @@ function Transactions() {
                       ? "Update Transaction"
                       : "Add Transaction"}
                 </button>
-
               </div>
-
             </form>
-
           </div>
-
         </div>
       )}
 
@@ -2222,96 +1446,62 @@ function Transactions() {
           DELETE MODAL
           ================================================== */}
 
-      {showDeleteModal &&
-        transactionToDelete && (
-
-          <div className="delete-modal-overlay">
-
-            <div className="delete-modal">
-
-              <div className="delete-modal-icon">
-                <Trash2 size={24} />
-              </div>
-
-              <h2>
-                Delete Transaction?
-              </h2>
-
-              <p>
-                Are you sure you want
-                to delete{" "}
-                <strong>
-                  &quot;
-                  {
-                    transactionToDelete.title
-                  }
-                  &quot;
-                </strong>
-                ?
-              </p>
-
-              <p className="delete-modal-warning">
-                This transaction will
-                be removed from your
-                transaction list.
-              </p>
-
-              {error && (
-                <p className="form-error">
-                  {error}
-                </p>
-              )}
-
-              <div className="delete-modal-actions">
-
-                <button
-                  type="button"
-                  onClick={() => {
-
-                    if (deleting) {
-                      return;
-                    }
-
-                    setShowDeleteModal(
-                      false,
-                    );
-
-                    setTransactionToDelete(
-                      null,
-                    );
-
-                    setError("");
-
-                  }}
-                  disabled={
-                    deleting
-                  }
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  className="delete-confirm-button"
-                  onClick={
-                    confirmDeleteTransaction
-                  }
-                  disabled={
-                    deleting
-                  }
-                >
-                  {deleting
-                    ? "Deleting..."
-                    : "Delete"}
-                </button>
-
-              </div>
-
+      {showDeleteModal && transactionToDelete && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <div className="delete-modal-icon">
+              <Trash2 size={24} />
             </div>
 
-          </div>
-        )}
+            <h2>Delete Transaction?</h2>
 
+            <p>
+              Are you sure you want to delete{" "}
+              <strong>
+                &quot;
+                {transactionToDelete.title}
+                &quot;
+              </strong>
+              ?
+            </p>
+
+            <p className="delete-modal-warning">
+              This transaction will be removed from your transaction list.
+            </p>
+
+            {error && <p className="form-error">{error}</p>}
+
+            <div className="delete-modal-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  if (deleting) {
+                    return;
+                  }
+
+                  setShowDeleteModal(false);
+
+                  setTransactionToDelete(null);
+
+                  setError("");
+                }}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="delete-confirm-button"
+                onClick={confirmDeleteTransaction}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
