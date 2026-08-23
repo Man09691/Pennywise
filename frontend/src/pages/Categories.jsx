@@ -109,6 +109,14 @@ function Categories() {
     location.state?.transactionFormData || null;
 
   // ==================================================
+  // BANK IMPORT -> CATEGORY FLOW
+  // ==================================================
+
+  const fromBankImport = location.state?.from === "bank-import";
+
+  const bankImportRowId = location.state?.rowId || null;
+
+  // ==================================================
   // MONTH / YEAR HELPERS
   // ==================================================
 
@@ -202,7 +210,7 @@ function Categories() {
   // ==================================================
 
   useEffect(() => {
-    if (!fromTransaction) {
+    if (!fromTransaction && !fromBankImport) {
       return;
     }
 
@@ -215,7 +223,7 @@ function Categories() {
 
     setError("");
     setShowForm(true);
-  }, [fromTransaction]);
+  }, [fromTransaction, fromBankImport]);
 
   // ==================================================
   // SUMMARY DATA
@@ -335,6 +343,20 @@ function Categories() {
   }
 
   // ==================================================
+  // RETURN TO BANK IMPORT
+  // ==================================================
+
+  function returnToBankImport(categoryId = null) {
+    navigate("/transactions/import", {
+      state: {
+        from: "bank-import",
+        newCategoryId: categoryId || null,
+        rowId: bankImportRowId || null,
+      },
+    });
+  }
+
+  // ==================================================
   // CLOSE ADD / EDIT FORM
   // ==================================================
 
@@ -347,6 +369,17 @@ function Categories() {
 
     if (fromTransaction && !editingCategory) {
       returnToTransaction();
+      return;
+    }
+
+    /*
+     * If this form was opened from Bank Import:
+     *
+     * Cancel -> return to Bank Import
+     */
+
+    if (fromBankImport && !editingCategory) {
+      returnToBankImport();
       return;
     }
 
@@ -457,6 +490,20 @@ function Categories() {
 
       if (fromTransaction) {
         returnToTransaction(data.category._id);
+        return;
+      }
+
+      // ==================================================
+      // IF COMING FROM BANK IMPORT
+      // ==================================================
+      //
+      // Return to Bank Import and automatically select
+      // the newly created category.
+      //
+      // ==================================================
+
+      if (fromBankImport) {
+        returnToBankImport(data.category._id);
         return;
       }
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Upload,
   FileText,
@@ -20,12 +20,6 @@ import { apiRequest } from "../services/api";
 |--------------------------------------------------------------------------
 | BANK CSV PROFILES
 |--------------------------------------------------------------------------
-|
-| Pennywise asks the user which bank produced the CSV.
-|
-| After the bank is selected, Pennywise knows the expected CSV aliases
-| and can automatically identify Pennywise transaction fields.
-|
 */
 
 const BANK_PROFILES = {
@@ -33,7 +27,6 @@ const BANK_PROFILES = {
     id: "sbi",
     name: "State Bank of India",
     shortName: "SBI",
-
     mapping: {
       date: [
         "date",
@@ -43,7 +36,6 @@ const BANK_PROFILES = {
         "transaction_date",
         "txn_date",
       ],
-
       type: [
         "type",
         "transaction type",
@@ -54,7 +46,6 @@ const BANK_PROFILES = {
         "credit debit",
         "debit credit",
       ],
-
       amount: [
         "amount",
         "transaction amount",
@@ -62,7 +53,6 @@ const BANK_PROFILES = {
         "value",
         "transaction value",
       ],
-
       paymentMethod: [
         "payment method",
         "mode",
@@ -72,7 +62,6 @@ const BANK_PROFILES = {
         "instrument",
         "channel",
       ],
-
       title: [
         "description",
         "transaction description",
@@ -82,14 +71,7 @@ const BANK_PROFILES = {
         "details",
         "transaction details",
       ],
-
-      note: [
-        "notes",
-        "note",
-        "comments",
-        "remark",
-        "remarks",
-      ],
+      note: ["notes", "note", "comments", "remark", "remarks"],
     },
   },
 
@@ -97,15 +79,8 @@ const BANK_PROFILES = {
     id: "hdfc",
     name: "HDFC Bank",
     shortName: "HDFC",
-
     mapping: {
-      date: [
-        "date",
-        "transaction date",
-        "txn date",
-        "value date",
-      ],
-
+      date: ["date", "transaction date", "txn date", "value date"],
       type: [
         "type",
         "transaction type",
@@ -114,14 +89,7 @@ const BANK_PROFILES = {
         "credit/debit",
         "debit/credit",
       ],
-
-      amount: [
-        "amount",
-        "transaction amount",
-        "txn amount",
-        "value",
-      ],
-
+      amount: ["amount", "transaction amount", "txn amount", "value"],
       paymentMethod: [
         "payment method",
         "mode",
@@ -129,7 +97,6 @@ const BANK_PROFILES = {
         "mode of payment",
         "payment mode",
       ],
-
       title: [
         "description",
         "transaction description",
@@ -138,14 +105,7 @@ const BANK_PROFILES = {
         "particulars",
         "details",
       ],
-
-      note: [
-        "notes",
-        "note",
-        "comments",
-        "remark",
-        "remarks",
-      ],
+      note: ["notes", "note", "comments", "remark", "remarks"],
     },
   },
 
@@ -153,15 +113,8 @@ const BANK_PROFILES = {
     id: "icici",
     name: "ICICI Bank",
     shortName: "ICICI",
-
     mapping: {
-      date: [
-        "date",
-        "transaction date",
-        "txn date",
-        "value date",
-      ],
-
+      date: ["date", "transaction date", "txn date", "value date"],
       type: [
         "type",
         "transaction type",
@@ -170,14 +123,7 @@ const BANK_PROFILES = {
         "credit/debit",
         "debit/credit",
       ],
-
-      amount: [
-        "amount",
-        "transaction amount",
-        "txn amount",
-        "value",
-      ],
-
+      amount: ["amount", "transaction amount", "txn amount", "value"],
       paymentMethod: [
         "payment method",
         "mode",
@@ -185,7 +131,6 @@ const BANK_PROFILES = {
         "mode of payment",
         "payment mode",
       ],
-
       title: [
         "description",
         "transaction description",
@@ -194,14 +139,7 @@ const BANK_PROFILES = {
         "particulars",
         "details",
       ],
-
-      note: [
-        "notes",
-        "note",
-        "comments",
-        "remark",
-        "remarks",
-      ],
+      note: ["notes", "note", "comments", "remark", "remarks"],
     },
   },
 
@@ -209,15 +147,8 @@ const BANK_PROFILES = {
     id: "axis",
     name: "Axis Bank",
     shortName: "Axis",
-
     mapping: {
-      date: [
-        "date",
-        "transaction date",
-        "txn date",
-        "value date",
-      ],
-
+      date: ["date", "transaction date", "txn date", "value date"],
       type: [
         "type",
         "transaction type",
@@ -226,14 +157,7 @@ const BANK_PROFILES = {
         "credit/debit",
         "debit/credit",
       ],
-
-      amount: [
-        "amount",
-        "transaction amount",
-        "txn amount",
-        "value",
-      ],
-
+      amount: ["amount", "transaction amount", "txn amount", "value"],
       paymentMethod: [
         "payment method",
         "mode",
@@ -241,7 +165,6 @@ const BANK_PROFILES = {
         "mode of payment",
         "payment mode",
       ],
-
       title: [
         "description",
         "transaction description",
@@ -250,14 +173,7 @@ const BANK_PROFILES = {
         "particulars",
         "details",
       ],
-
-      note: [
-        "notes",
-        "note",
-        "comments",
-        "remark",
-        "remarks",
-      ],
+      note: ["notes", "note", "comments", "remark", "remarks"],
     },
   },
 
@@ -265,15 +181,8 @@ const BANK_PROFILES = {
     id: "other",
     name: "Other / Unknown Bank",
     shortName: "Other",
-
     mapping: {
-      date: [
-        "date",
-        "transaction date",
-        "txn date",
-        "value date",
-      ],
-
+      date: ["date", "transaction date", "txn date", "value date"],
       type: [
         "type",
         "transaction type",
@@ -283,7 +192,6 @@ const BANK_PROFILES = {
         "dr/cr",
         "transaction direction",
       ],
-
       amount: [
         "amount",
         "transaction amount",
@@ -291,7 +199,6 @@ const BANK_PROFILES = {
         "value",
         "transaction value",
       ],
-
       paymentMethod: [
         "payment method",
         "mode",
@@ -300,7 +207,6 @@ const BANK_PROFILES = {
         "payment mode",
         "channel",
       ],
-
       title: [
         "description",
         "transaction description",
@@ -309,37 +215,17 @@ const BANK_PROFILES = {
         "particulars",
         "details",
       ],
-
-      note: [
-        "notes",
-        "note",
-        "comments",
-        "remark",
-        "remarks",
-      ],
+      note: ["notes", "note", "comments", "remark", "remarks"],
     },
   },
 };
-
-const FIELD_LABELS = {
-  date: "Date",
-  type: "Type",
-  amount: "Amount",
-  paymentMethod: "Payment Method",
-  title: "Description",
-  note: "Notes",
-};
-
-const REQUIRED_AUTO_FIELDS = [
-  "date",
-  "type",
-  "amount",
-];
 
 const EMPTY_MAPPING = {
   date: "",
   type: "",
   amount: "",
+  creditAmount: "",
+  debitAmount: "",
   paymentMethod: "",
   title: "",
   note: "",
@@ -361,7 +247,7 @@ function normalizeHeader(value) {
 
 /*
 |--------------------------------------------------------------------------
-| AUTOMATIC COLUMN MATCHING
+| AUTOMATIC COLUMN MAPPING
 |--------------------------------------------------------------------------
 */
 
@@ -375,31 +261,60 @@ function automaticallyMapColumns(headers, bankProfile) {
     normalized: normalizeHeader(header),
   }));
 
-  Object.entries(bankProfile.mapping).forEach(
-    ([field, aliases]) => {
-      const normalizedAliases = aliases.map(normalizeHeader);
+  Object.entries(bankProfile.mapping).forEach(([field, aliases]) => {
+    const normalizedAliases = aliases.map(normalizeHeader);
 
-      const match = normalizedHeaders.find((header) =>
-        normalizedAliases.includes(header.normalized)
-      );
+    const match = normalizedHeaders.find((header) =>
+      normalizedAliases.includes(header.normalized),
+    );
 
-      if (match) {
-        mapping[field] = match.original;
-      }
+    if (match) {
+      mapping[field] = match.original;
     }
-  );
+  });
+
+  const findHeader = (aliases) => {
+    const normalizedAliases = aliases.map(normalizeHeader);
+
+    const match = normalizedHeaders.find((header) =>
+      normalizedAliases.includes(header.normalized),
+    );
+
+    return match?.original || "";
+  };
+
+  mapping.creditAmount = findHeader([
+    "credit",
+    "credit amount",
+    "credit_amt",
+    "credit amt",
+    "cr amount",
+    "cr amt",
+    "credited amount",
+  ]);
+
+  mapping.debitAmount = findHeader([
+    "debit",
+    "debit amount",
+    "debit_amt",
+    "debit amt",
+    "dr amount",
+    "dr amt",
+    "debited amount",
+  ]);
 
   return mapping;
 }
 
 /*
 |--------------------------------------------------------------------------
-| BANK IMPORT
+| BANK IMPORT COMPONENT
 |--------------------------------------------------------------------------
 */
 
 function BankImport() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fileInputRef = useRef(null);
 
@@ -441,21 +356,14 @@ function BankImport() {
 
   /*
   |--------------------------------------------------------------------------
-  | AUTOMATIC PROCESSING
+  | PROCESSING
   |--------------------------------------------------------------------------
   */
 
-  const [columnMapping, setColumnMapping] =
-    useState(EMPTY_MAPPING);
-
-  const [normalizedRows, setNormalizedRows] =
-    useState([]);
-
-  const [processingError, setProcessingError] =
-    useState("");
-
-  const [processingErrors, setProcessingErrors] =
-    useState([]);
+  const [columnMapping, setColumnMapping] = useState(EMPTY_MAPPING);
+  const [normalizedRows, setNormalizedRows] = useState([]);
+  const [processingError, setProcessingError] = useState("");
+  const [processingErrors, setProcessingErrors] = useState([]);
 
   /*
   |--------------------------------------------------------------------------
@@ -464,20 +372,44 @@ function BankImport() {
   */
 
   const [categories, setCategories] = useState([]);
-  const [loadingCategories, setLoadingCategories] =
-    useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   /*
   |--------------------------------------------------------------------------
-  | DUPLICATE CHECK
+  | CATEGORY RETURN FLOW
+  |--------------------------------------------------------------------------
+  |
+  | IMPORTANT:
+  | These states MUST be inside the component.
+  |
+  */
+
+  const [addingCategoryForRow, setAddingCategoryForRow] = useState(null);
+  const [categoryReturnHandled, setCategoryReturnHandled] = useState(false);
+
+  /*
+  |--------------------------------------------------------------------------
+  | DUPLICATES
   |--------------------------------------------------------------------------
   */
 
-  const [duplicateRows, setDuplicateRows] =
-    useState([]);
+  const [duplicateRows, setDuplicateRows] = useState([]);
+  const [duplicateCheckComplete, setDuplicateCheckComplete] = useState(false);
 
-  const [duplicateCheckComplete, setDuplicateCheckComplete] =
-    useState(false);
+  const [duplicateSummary, setDuplicateSummary] = useState({
+    total: 0,
+    duplicateCount: 0,
+    newCount: 0,
+  });
+
+  /*
+  |--------------------------------------------------------------------------
+  | IMPORT
+  |--------------------------------------------------------------------------
+  */
+
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
 
   /*
   |--------------------------------------------------------------------------
@@ -491,19 +423,7 @@ function BankImport() {
   |--------------------------------------------------------------------------
   | LOAD CATEGORIES
   |--------------------------------------------------------------------------
-  |
-  | IMPORTANT:
-  | This uses the same /categories endpoint used by Pennywise.
-  |
-  | Therefore the import page receives:
-  | - shared default categories
-  | - user's custom categories
-  |
   */
-
-  useEffect(() => {
-    loadCategories();
-  }, []);
 
   async function loadCategories() {
     try {
@@ -517,20 +437,157 @@ function BankImport() {
 
       setCategories(loadedCategories);
     } catch (err) {
-      console.error(
-        "Unable to load categories:",
-        err
-      );
+      console.error("Unable to load categories:", err);
 
       setCategories([]);
 
       setError(
-        "Unable to load your Pennywise categories. Please refresh and try again."
+        "Unable to load your Pennywise categories. Please refresh and try again.",
       );
     } finally {
       setLoadingCategories(false);
     }
   }
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | RESTORE BANK IMPORT AFTER RETURNING FROM CATEGORIES
+  |--------------------------------------------------------------------------
+  |
+  | Categories page navigates here with location.state:
+  |
+  |   { from: "bank-import", newCategoryId, rowId }
+  |
+  | This fires after:
+  |
+  | 1. Creating a category (newCategoryId is set)
+  | 2. Cancelling the Add Category form (newCategoryId is null)
+  |
+  */
+
+  useEffect(() => {
+    const state = location.state;
+
+    if (state?.from !== "bank-import" || categoryReturnHandled) {
+      return;
+    }
+
+    setCategoryReturnHandled(true);
+
+    const newCategoryId = state?.newCategoryId || null;
+    const rowId = state?.rowId || null;
+
+    async function restoreImport() {
+      try {
+        /*
+        | Restore saved import state from sessionStorage.
+        */
+
+        const saved = sessionStorage.getItem(
+          "pennywise_bank_import_state",
+        );
+
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+
+            if (parsed.selectedBank) {
+              setSelectedBank(parsed.selectedBank);
+            }
+
+            if (Array.isArray(parsed.csvHeaders)) {
+              setCsvHeaders(parsed.csvHeaders);
+            }
+
+            if (Array.isArray(parsed.csvRows)) {
+              setCsvRows(parsed.csvRows);
+            }
+
+            if (typeof parsed.csvRowCount === "number") {
+              setCsvRowCount(parsed.csvRowCount);
+            }
+
+            if (parsed.columnMapping) {
+              setColumnMapping(parsed.columnMapping);
+            }
+
+            if (Array.isArray(parsed.normalizedRows)) {
+              setNormalizedRows(parsed.normalizedRows);
+            }
+
+            if (parsed.selectedFileName) {
+              setSelectedFile({
+                name: parsed.selectedFileName,
+                size: parsed.selectedFileSize || 0,
+              });
+            }
+          } catch (parseErr) {
+            console.error(
+              "Unable to restore bank import state:",
+              parseErr,
+            );
+          }
+
+          sessionStorage.removeItem(
+            "pennywise_bank_import_state",
+          );
+        }
+
+        /*
+        | If a new category was created, reload categories first.
+        */
+
+        await loadCategories();
+
+        /*
+        | If Categories returned a newly created category,
+        | automatically assign it to the row that requested it.
+        */
+
+        if (newCategoryId && rowId) {
+          setNormalizedRows((previousRows) =>
+            previousRows.map((row) =>
+              row.id === rowId
+                ? {
+                    ...row,
+                    category: newCategoryId,
+                  }
+                : row,
+            ),
+          );
+        }
+
+        /*
+        | Always return to the Review step.
+        */
+
+        setCurrentStep(5);
+
+        setAddingCategoryForRow(null);
+
+        /*
+        | Clear the location state so this doesn't re-trigger.
+        */
+
+        window.history.replaceState(
+          {},
+          "",
+          location.pathname,
+        );
+      } catch (err) {
+        console.error(
+          "Unable to restore bank import after category flow:",
+          err,
+        );
+      }
+    }
+
+    restoreImport();
+  }, [location.state, categoryReturnHandled]);
 
   /*
   |--------------------------------------------------------------------------
@@ -556,6 +613,18 @@ function BankImport() {
 
     setDuplicateRows([]);
     setDuplicateCheckComplete(false);
+
+    setDuplicateSummary({
+      total: 0,
+      duplicateCount: 0,
+      newCount: 0,
+    });
+
+    setImporting(false);
+    setImportResult(null);
+
+    setAddingCategoryForRow(null);
+    setCategoryReturnHandled(false);
 
     setError("");
   }
@@ -599,9 +668,7 @@ function BankImport() {
     const maxSize = 10 * 1024 * 1024;
 
     if (file.size > maxSize) {
-      setError(
-        "CSV file must be smaller than 10 MB."
-      );
+      setError("CSV file must be smaller than 10 MB.");
       return false;
     }
 
@@ -708,7 +775,7 @@ function BankImport() {
 
   /*
   |--------------------------------------------------------------------------
-  | FORMAT FILE SIZE
+  | FILE SIZE
   |--------------------------------------------------------------------------
   */
 
@@ -751,7 +818,7 @@ function BankImport() {
 
           if (!fields.length) {
             setError(
-              "The CSV file does not contain a readable header row."
+              "The CSV file does not contain a readable header row.",
             );
 
             setReadingCsv(false);
@@ -760,14 +827,13 @@ function BankImport() {
 
           const cleanedRows = rows.filter((row) =>
             Object.values(row).some(
-              (value) =>
-                String(value ?? "").trim() !== ""
-            )
+              (value) => String(value ?? "").trim() !== "",
+            ),
           );
 
           if (!cleanedRows.length) {
             setError(
-              "The CSV file does not contain any usable transaction records."
+              "The CSV file does not contain any usable transaction records.",
             );
 
             setReadingCsv(false);
@@ -780,13 +846,10 @@ function BankImport() {
 
           setCurrentStep(3);
         } catch (err) {
-          console.error(
-            "CSV processing error:",
-            err
-          );
+          console.error("CSV processing error:", err);
 
           setError(
-            "Something went wrong while reading the CSV file."
+            "Something went wrong while reading the CSV file.",
           );
         } finally {
           setReadingCsv(false);
@@ -794,14 +857,10 @@ function BankImport() {
       },
 
       error: (parseError) => {
-        console.error(
-          "CSV parsing error:",
-          parseError
-        );
+        console.error("CSV parsing error:", parseError);
 
         setError(
-          parseError?.message ||
-            "Unable to read the CSV file."
+          parseError?.message || "Unable to read the CSV file.",
         );
 
         setReadingCsv(false);
@@ -811,18 +870,74 @@ function BankImport() {
 
   /*
   |--------------------------------------------------------------------------
-  | GET MAPPED VALUE
+  | AMOUNT PARSING
   |--------------------------------------------------------------------------
   */
 
-  function getMappedValue(row, field) {
-    const column = columnMapping[field];
-
-    if (!column) {
-      return "";
+  function parseRawAmount(value) {
+    if (value === null || value === undefined) {
+      return null;
     }
 
-    return String(row[column] ?? "").trim();
+    const originalValue = String(value).trim();
+
+    if (!originalValue) {
+      return null;
+    }
+
+    let cleanedValue = originalValue
+      .replace(/,/g, "")
+      .replace(/[₹$€£]/g, "")
+      .trim();
+
+    const upper = cleanedValue.toUpperCase();
+
+    let suffixType = "";
+
+    if (/\bCR\.?$/.test(upper)) {
+      suffixType = "income";
+
+      cleanedValue = cleanedValue
+        .replace(/\s*CR\.?$/i, "")
+        .trim();
+    } else if (/\bDR\.?$/.test(upper)) {
+      suffixType = "expense";
+
+      cleanedValue = cleanedValue
+        .replace(/\s*DR\.?$/i, "")
+        .trim();
+    }
+
+    const parenthesesNegative = /^\(.*\)$/.test(cleanedValue);
+
+    cleanedValue = cleanedValue
+      .replace(/^\(/, "")
+      .replace(/\)$/, "")
+      .trim();
+
+    const amount = Number(cleanedValue);
+
+    if (!Number.isFinite(amount)) {
+      return null;
+    }
+
+    let sign = "positive";
+
+    if (
+      amount < 0 ||
+      parenthesesNegative ||
+      /^-/.test(cleanedValue)
+    ) {
+      sign = "negative";
+    } else if (/^\+/.test(cleanedValue)) {
+      sign = "positive";
+    }
+
+    return {
+      amount: Math.abs(amount),
+      sign,
+      suffixType,
+    };
   }
 
   /*
@@ -842,20 +957,12 @@ function BankImport() {
       return "";
     }
 
-    /*
-    | YYYY-MM-DD
-    */
-
     if (/^\d{4}-\d{2}-\d{2}$/.test(rawValue)) {
       return rawValue;
     }
 
-    /*
-    | DD/MM/YYYY
-    */
-
     const ddmmyyyy = rawValue.match(
-      /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+      /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/,
     );
 
     if (ddmmyyyy) {
@@ -866,12 +973,8 @@ function BankImport() {
       return `${year}-${month}-${day}`;
     }
 
-    /*
-    | DD-MM-YYYY
-    */
-
     const ddmmyyyyDash = rawValue.match(
-      /^(\d{1,2})-(\d{1,2})-(\d{4})$/
+      /^(\d{1,2})-(\d{1,2})-(\d{4})$/,
     );
 
     if (ddmmyyyyDash) {
@@ -882,21 +985,15 @@ function BankImport() {
       return `${year}-${month}-${day}`;
     }
 
-    /*
-    | Native date parser fallback
-    */
-
     const parsedDate = new Date(rawValue);
 
     if (!Number.isNaN(parsedDate.getTime())) {
       const year = parsedDate.getFullYear();
-
       const month = String(
-        parsedDate.getMonth() + 1
+        parsedDate.getMonth() + 1,
       ).padStart(2, "0");
-
       const day = String(
-        parsedDate.getDate()
+        parsedDate.getDate(),
       ).padStart(2, "0");
 
       return `${year}-${month}-${day}`;
@@ -909,17 +1006,6 @@ function BankImport() {
   |--------------------------------------------------------------------------
   | TYPE NORMALIZATION
   |--------------------------------------------------------------------------
-  |
-  | Type is NEVER manually selected by the user.
-  |
-  | We try:
-  | 1. Credit / Debit text
-  | 2. CR / DR
-  | 3. Signed amount
-  |
-  | If Pennywise cannot safely determine it,
-  | the transaction is marked as unsafe.
-  |
   */
 
   function normalizeType(value) {
@@ -959,17 +1045,11 @@ function BankImport() {
       return "expense";
     }
 
-    if (
-      rawValue.includes("credit") ||
-      rawValue === "cr"
-    ) {
+    if (rawValue.includes("credit") || rawValue === "cr") {
       return "income";
     }
 
-    if (
-      rawValue.includes("debit") ||
-      rawValue === "dr"
-    ) {
+    if (rawValue.includes("debit") || rawValue === "dr") {
       return "expense";
     }
 
@@ -978,207 +1058,250 @@ function BankImport() {
 
   /*
   |--------------------------------------------------------------------------
-  | AMOUNT NORMALIZATION
-  |--------------------------------------------------------------------------
-  |
-  | Returns:
-  | - positive number = valid amount
-  | - null = invalid / unreadable amount
-  |
-  */
-
-  function normalizeAmount(value) {
-    if (
-      value === null ||
-      value === undefined
-    ) {
-      return null;
-    }
-
-    const originalValue = String(value).trim();
-
-    if (!originalValue) {
-      return null;
-    }
-
-    const cleanedValue = originalValue
-      .replace(/,/g, "")
-      .replace(/[₹$€£]/g, "")
-      .trim();
-
-    /*
-    | Parentheses can represent negative values:
-    | (1000) -> -1000
-    */
-
-    const isParenthesesNegative =
-      /^\(.*\)$/.test(cleanedValue);
-
-    const withoutParentheses =
-      cleanedValue
-        .replace(/^\(/, "")
-        .replace(/\)$/, "");
-
-    const amount = Number(
-      withoutParentheses
-    );
-
-    if (!Number.isFinite(amount)) {
-      return null;
-    }
-
-    return Math.abs(amount);
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | DETERMINE TYPE FROM ROW
-  |--------------------------------------------------------------------------
-  |
-  | This is deliberately conservative.
-  |
-  | We do NOT guess randomly.
-  |
-  */
-
-  function determineTransactionType(
-    row,
-    mapping
-  ) {
-    /*
-    | First use explicit Type / Credit-Debit column.
-    */
-
-    if (mapping.type) {
-      const rawType = getMappedValueFromMapping(
-        row,
-        mapping,
-        "type"
-      );
-
-      const normalizedType =
-        normalizeType(rawType);
-
-      if (normalizedType) {
-        return normalizedType;
-      }
-    }
-
-    /*
-    | If there is no dedicated type column,
-    | inspect amount sign.
-    */
-
-    if (mapping.amount) {
-      const rawAmount = String(
-        row[mapping.amount] ?? ""
-      ).trim();
-
-      if (
-        rawAmount.startsWith("-") ||
-        /^\(.*\)$/.test(rawAmount)
-      ) {
-        return "expense";
-      }
-
-      if (
-        rawAmount.startsWith("+")
-      ) {
-        return "income";
-      }
-    }
-
-    return "";
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | GET VALUE USING SPECIFIC MAPPING
+  | COLUMN VALUE
   |--------------------------------------------------------------------------
   */
 
-  function getMappedValueFromMapping(
-    row,
-    mapping,
-    field
-  ) {
-    const column = mapping[field];
-
+  function getColumnValue(row, column) {
     if (!column) {
       return "";
     }
 
-    return String(
-      row[column] ?? ""
-    ).trim();
+    return String(row[column] ?? "").trim();
   }
 
   /*
   |--------------------------------------------------------------------------
-  | CREATE NORMALIZED ROW
+  | DETERMINE FINANCIALS
   |--------------------------------------------------------------------------
   */
 
-  function normalizeRow(
-    row,
-    index,
-    mapping
-  ) {
-    const date = normalizeDate(
-      getMappedValueFromMapping(
-        row,
-        mapping,
-        "date"
-      )
+  function determineTransactionFinancials(row, mapping) {
+    const explicitType = mapping.type
+      ? normalizeType(
+          getColumnValue(row, mapping.type),
+        )
+      : "";
+
+    const rawAmount = mapping.amount
+      ? getColumnValue(row, mapping.amount)
+      : "";
+
+    const parsedAmount = rawAmount
+      ? parseRawAmount(rawAmount)
+      : null;
+
+    const creditRaw = getColumnValue(
+      row,
+      mapping.creditAmount,
     );
 
-    const rawAmount =
-      getMappedValueFromMapping(
-        row,
-        mapping,
-        "amount"
-      );
+    const debitRaw = getColumnValue(
+      row,
+      mapping.debitAmount,
+    );
 
-    const amount =
-      normalizeAmount(rawAmount);
+    const credit = creditRaw
+      ? parseRawAmount(creditRaw)
+      : null;
 
-    const type =
-      determineTransactionType(
-        row,
-        mapping
-      );
+    const debit = debitRaw
+      ? parseRawAmount(debitRaw)
+      : null;
 
-    const paymentMethod =
-      getMappedValueFromMapping(
-        row,
-        mapping,
-        "paymentMethod"
-      );
+    const hasCredit = credit && credit.amount > 0;
+    const hasDebit = debit && debit.amount > 0;
 
-    const title =
-      getMappedValueFromMapping(
-        row,
-        mapping,
-        "title"
-      );
+    if (hasCredit && hasDebit) {
+      return {
+        type: "",
+        amount: null,
+        error:
+          "Both Credit and Debit contain values, so the transaction type is ambiguous.",
+      };
+    }
 
-    const note =
-      getMappedValueFromMapping(
-        row,
-        mapping,
-        "note"
-      );
+    if (hasCredit) {
+      if (
+        explicitType &&
+        explicitType !== "income"
+      ) {
+        return {
+          type: "",
+          amount: null,
+          error:
+            "Credit amount conflicts with the transaction type column.",
+        };
+      }
+
+      return {
+        type: "income",
+        amount: credit.amount,
+        error: "",
+      };
+    }
+
+    if (hasDebit) {
+      if (
+        explicitType &&
+        explicitType !== "expense"
+      ) {
+        return {
+          type: "",
+          amount: null,
+          error:
+            "Debit amount conflicts with the transaction type column.",
+        };
+      }
+
+      return {
+        type: "expense",
+        amount: debit.amount,
+        error: "",
+      };
+    }
+
+    if (explicitType) {
+      if (parsedAmount) {
+        if (
+          parsedAmount.suffixType &&
+          parsedAmount.suffixType !== explicitType
+        ) {
+          return {
+            type: "",
+            amount: null,
+            error:
+              "The amount direction conflicts with the transaction type column.",
+          };
+        }
+
+        if (
+          parsedAmount.sign === "negative" &&
+          explicitType !== "expense"
+        ) {
+          return {
+            type: "",
+            amount: null,
+            error:
+              "A negative amount conflicts with an Income transaction type.",
+          };
+        }
+
+        if (
+          parsedAmount.sign === "positive" &&
+          explicitType === "expense" &&
+          /^\+/.test(rawAmount)
+        ) {
+          return {
+            type: "",
+            amount: null,
+            error:
+              "A positive signed amount conflicts with an Expense transaction type.",
+          };
+        }
+
+        return {
+          type: explicitType,
+          amount: parsedAmount.amount,
+          error: "",
+        };
+      }
+
+      return {
+        type: explicitType,
+        amount: null,
+        error: "Amount could not be determined.",
+      };
+    }
+
+    if (parsedAmount) {
+      if (parsedAmount.suffixType) {
+        return {
+          type: parsedAmount.suffixType,
+          amount: parsedAmount.amount,
+          error: "",
+        };
+      }
+
+      if (parsedAmount.sign === "negative") {
+        return {
+          type: "expense",
+          amount: parsedAmount.amount,
+          error: "",
+        };
+      }
+
+      if (
+        parsedAmount.sign === "positive" &&
+        /^\+/.test(rawAmount)
+      ) {
+        return {
+          type: "income",
+          amount: parsedAmount.amount,
+          error: "",
+        };
+      }
+
+      return {
+        type: "",
+        amount: parsedAmount.amount,
+        error:
+          "The Amount is unsigned and no Credit/Debit or Type information was found.",
+      };
+    }
 
     return {
-      id: `import-${index}-${Date.now()}`,
+      type: "",
+      amount: null,
+      error:
+        "Income/Expense type could not be determined from this CSV row.",
+    };
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | NORMALIZE ROW
+  |--------------------------------------------------------------------------
+  */
+
+  function normalizeRow(row, index, mapping) {
+    const date = normalizeDate(
+      getColumnValue(row, mapping.date),
+    );
+
+    const financials =
+      determineTransactionFinancials(
+        row,
+        mapping,
+      );
+
+    const paymentMethod = getColumnValue(
+      row,
+      mapping.paymentMethod,
+    );
+
+    const title = getColumnValue(
+      row,
+      mapping.title,
+    );
+
+    const note = getColumnValue(
+      row,
+      mapping.note,
+    );
+
+    return {
+      id: `import-${index}-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}`,
 
       rowNumber: index + 2,
 
       date,
 
-      type,
+      type: financials.type,
 
-      amount,
+      amount: financials.amount,
 
       paymentMethod,
 
@@ -1186,25 +1309,13 @@ function BankImport() {
 
       note,
 
-      /*
-      | Category is intentionally empty.
-      |
-      | The user selects this from Pennywise categories.
-      */
-
       category: "",
-
-      /*
-      | Preserve original CSV row for debugging.
-      */
 
       originalRow: row,
 
-      /*
-      | Errors specific to this transaction.
-      */
-
-      errors: [],
+      errors: financials.error
+        ? [financials.error]
+        : [],
     };
   }
 
@@ -1220,16 +1331,12 @@ function BankImport() {
     setProcessingErrors([]);
 
     if (!selectedBank) {
-      setError(
-        "Please select your bank first."
-      );
+      setError("Please select your bank first.");
       return;
     }
 
     if (!csvHeaders.length) {
-      setError(
-        "Please read the CSV file first."
-      );
+      setError("Please read the CSV file first.");
       return;
     }
 
@@ -1238,36 +1345,18 @@ function BankImport() {
 
     if (!profile) {
       setError(
-        "Unable to identify the selected bank."
+        "Unable to identify the selected bank.",
       );
       return;
     }
 
-    /*
-    | Automatically determine which CSV columns
-    | correspond to Pennywise fields.
-    */
-
     const mapping =
       automaticallyMapColumns(
         csvHeaders,
-        profile
+        profile,
       );
 
     setColumnMapping(mapping);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Check essential columns
-    |--------------------------------------------------------------------------
-    |
-    | Date and amount need a CSV column.
-    |
-    | Type is special:
-    | It can either have its own column OR be derived
-    | from a signed amount.
-    |
-    */
 
     const missingColumns = [];
 
@@ -1275,20 +1364,26 @@ function BankImport() {
       missingColumns.push("Date");
     }
 
-    if (!mapping.amount) {
-      missingColumns.push("Amount");
+    if (
+      !mapping.amount &&
+      !mapping.creditAmount &&
+      !mapping.debitAmount
+    ) {
+      missingColumns.push(
+        "Amount or Credit/Debit",
+      );
     }
 
     if (missingColumns.length > 0) {
       setProcessingError(
         `Pennywise cannot safely process this CSV because ${missingColumns.join(
-          " and "
-        )} could not be identified.`
+          " and ",
+        )} could not be identified.`,
       );
 
       setProcessingErrors([
         `Missing required CSV column: ${missingColumns.join(
-          ", "
+          ", ",
         )}`,
       ]);
 
@@ -1297,10 +1392,6 @@ function BankImport() {
 
       return;
     }
-
-    /*
-    | Parse the complete CSV again.
-    */
 
     Papa.parse(selectedFile, {
       header: true,
@@ -1315,81 +1406,69 @@ function BankImport() {
             rows.filter((row) =>
               Object.values(row).some(
                 (value) =>
-                  String(
-                    value ?? ""
-                  ).trim() !== ""
-              )
+                  String(value ?? "").trim() !== "",
+              ),
             );
 
           const normalized =
-            cleanedRows.map(
-              (row, index) =>
-                normalizeRow(
-                  row,
-                  index,
-                  mapping
-                )
+            cleanedRows.map((row, index) =>
+              normalizeRow(
+                row,
+                index,
+                mapping,
+              ),
             );
 
-          /*
-          |--------------------------------------------------------------------------
-          | Validate every transaction
-          |--------------------------------------------------------------------------
-          */
-
           const rowsWithErrors =
-            normalized
-              .map((row) => {
-                const errors = [];
+            normalized.map((row) => {
+              const errors = Array.isArray(
+                row.errors,
+              )
+                ? [...row.errors]
+                : [];
 
-                if (!row.date) {
-                  errors.push(
-                    "Date could not be determined"
-                  );
-                }
+              if (!row.date) {
+                errors.push(
+                  "Date could not be determined",
+                );
+              }
 
-                if (row.amount === null) {
-                  errors.push(
-                    "Amount could not be determined"
-                  );
-                }
+              if (row.amount === null) {
+                errors.push(
+                  "Amount could not be determined",
+                );
+              }
 
-                if (!row.type) {
-                  errors.push(
-                    "Income/Expense type could not be determined"
-                  );
-                }
+              if (
+                !row.type &&
+                !errors.some((item) =>
+                  String(item)
+                    .toLowerCase()
+                    .includes("type"),
+                )
+              ) {
+                errors.push(
+                  "Income/Expense type could not be determined",
+                );
+              }
 
-                return {
-                  ...row,
-                  errors,
-                };
-              });
+              return {
+                ...row,
+                errors: [
+                  ...new Set(errors),
+                ],
+              };
+            });
 
           const invalidRows =
             rowsWithErrors.filter(
               (row) =>
-                row.errors.length > 0
+                row.errors.length > 0,
             );
-
-          /*
-          |--------------------------------------------------------------------------
-          | IMPORTANT
-          |--------------------------------------------------------------------------
-          |
-          | If ANY required transaction information is unsafe,
-          | we DO NOT allow the user to continue.
-          |
-          | We don't make the user manually edit Type/Amount/Date.
-          |
-          | Instead we tell them the CSV cannot be safely processed
-          | and they should upload another bank CSV.
-          |
-          */
 
           if (invalidRows.length > 0) {
             setNormalizedRows(
-              rowsWithErrors
+              rowsWithErrors,
             );
 
             setProcessingErrors(
@@ -1398,9 +1477,9 @@ function BankImport() {
                 .map(
                   (row) =>
                     `Row ${row.rowNumber}: ${row.errors.join(
-                      ", "
-                    )}`
-                )
+                      ", ",
+                    )}`,
+                ),
             );
 
             setProcessingError(
@@ -1408,7 +1487,7 @@ function BankImport() {
                 invalidRows.length !== 1
                   ? "s"
                   : ""
-              } could not be safely understood.`
+              } could not be safely understood.`,
             );
 
             setCurrentStep(4);
@@ -1416,12 +1495,8 @@ function BankImport() {
             return;
           }
 
-          /*
-          | Everything required was understood.
-          */
-
           setNormalizedRows(
-            rowsWithErrors
+            rowsWithErrors,
           );
 
           setProcessingError("");
@@ -1431,11 +1506,11 @@ function BankImport() {
         } catch (err) {
           console.error(
             "Automatic processing error:",
-            err
+            err,
           );
 
           setProcessingError(
-            "Pennywise could not safely process this CSV. Please upload another CSV file."
+            "Pennywise could not safely process this CSV. Please upload another CSV file.",
           );
 
           setProcessingErrors([
@@ -1450,11 +1525,11 @@ function BankImport() {
       error: (parseError) => {
         console.error(
           "CSV processing error:",
-          parseError
+          parseError,
         );
 
         setProcessingError(
-          "Pennywise could not read this CSV safely. Please upload another CSV file."
+          "Pennywise could not read this CSV safely. Please upload another CSV file.",
         );
 
         setProcessingErrors([
@@ -1475,7 +1550,7 @@ function BankImport() {
 
   function handleCategoryChange(
     rowId,
-    categoryId
+    categoryId,
   ) {
     setNormalizedRows(
       (previousRows) =>
@@ -1485,14 +1560,14 @@ function BankImport() {
                 ...row,
                 category: categoryId,
               }
-            : row
-        )
+            : row,
+        ),
     );
   }
 
   /*
   |--------------------------------------------------------------------------
-  | CATEGORY NAME
+  | CATEGORY HELPERS
   |--------------------------------------------------------------------------
   */
 
@@ -1508,12 +1583,6 @@ function BankImport() {
     );
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | CATEGORY ID
-  |--------------------------------------------------------------------------
-  */
-
   function getCategoryId(category) {
     if (!category) {
       return "";
@@ -1528,20 +1597,67 @@ function BankImport() {
 
   /*
   |--------------------------------------------------------------------------
-  | ADD CATEGORY
+  | ADD CATEGORY FLOW
   |--------------------------------------------------------------------------
   |
-  | We keep the same "Add Category" route/flow concept.
+  | This is the important part.
   |
-  | For now we navigate to Transactions with the add-category
-  | flow rather than creating a second category system.
+  | Clicking Add Category:
+  |
+  | Bank Import
+  |      ↓
+  | Transactions
+  |      ↓
+  | Add Category form automatically opens
+  |      ↓
+  | User creates/cancels
+  |      ↓
+  | Bank Import
+  |
+  | rowId identifies exactly which imported row
+  | requested the category.
   |
   */
 
-  function handleAddCategory() {
-    navigate(
-      "/transactions?addCategory=true"
-    );
+  function handleAddCategory(rowId = null) {
+    setAddingCategoryForRow(rowId);
+
+    /*
+    | Save the current import state to sessionStorage
+    | so it survives the round-trip to the Categories page.
+    | File objects cannot be serialized, so we store
+    | the file name and size separately.
+    */
+
+    try {
+      const stateToSave = {
+        selectedBank,
+        csvHeaders,
+        csvRows,
+        csvRowCount,
+        columnMapping,
+        normalizedRows,
+        selectedFileName: selectedFile?.name || null,
+        selectedFileSize: selectedFile?.size || 0,
+      };
+
+      sessionStorage.setItem(
+        "pennywise_bank_import_state",
+        JSON.stringify(stateToSave),
+      );
+    } catch (err) {
+      console.error(
+        "Unable to save bank import state:",
+        err,
+      );
+    }
+
+    navigate("/categories", {
+      state: {
+        from: "bank-import",
+        rowId: rowId || null,
+      },
+    });
   }
 
   /*
@@ -1552,12 +1668,12 @@ function BankImport() {
 
   const rowsWithoutCategory =
     normalizedRows.filter(
-      (row) => !row.category
+      (row) => !row.category,
     );
 
   /*
   |--------------------------------------------------------------------------
-  | VALID / INVALID ROWS
+  | VALID ROWS
   |--------------------------------------------------------------------------
   */
 
@@ -1566,118 +1682,263 @@ function BankImport() {
       (row) =>
         row.date &&
         row.type &&
-        row.amount !== null
+        row.amount !== null,
     );
-
-  /*
-  |--------------------------------------------------------------------------
-  | DUPLICATE KEY
-  |--------------------------------------------------------------------------
-  |
-  | IMPORTANT DUPLICATE RULE:
-  |
-  | Two transactions are duplicates only when ALL
-  | identifying transaction values match.
-  |
-  | Amount is included.
-  |
-  | Therefore:
-  |
-  | Same date
-  | Same type
-  | Same category
-  | Same payment method
-  | Same description
-  | Same note
-  | DIFFERENT amount
-  |
-  | => NOT a duplicate.
-  |
-  */
-
-  function createDuplicateKey(row) {
-    return [
-      row.date,
-      row.type,
-      row.amount,
-      row.category,
-      row.paymentMethod,
-      row.title,
-      row.note,
-    ]
-      .map((value) =>
-        String(value ?? "")
-          .trim()
-          .toLowerCase()
-      )
-      .join("|");
-  }
 
   /*
   |--------------------------------------------------------------------------
   | CHECK DUPLICATES
   |--------------------------------------------------------------------------
-  |
-  | This stage currently checks duplicates inside the imported CSV.
-  |
-  | The next backend implementation will compare the same key
-  | against existing Pennywise transactions.
-  |
   */
 
-  function checkDuplicates() {
+  async function checkDuplicates() {
     setError("");
+    setImportResult(null);
 
-    if (rowsWithoutCategory.length > 0) {
+    const invalidCategoryRows =
+      normalizedRows.filter(
+        (row) =>
+          !row.category ||
+          row.category ===
+            "__add_category__",
+      );
+
+    if (invalidCategoryRows.length > 0) {
       setError(
-        `Please select a category for all transactions before checking duplicates.`
+        "Please select a real Pennywise category for every transaction before checking duplicates.",
       );
 
       return;
     }
 
-    const seen = new Map();
-    const duplicates = [];
+    if (normalizedRows.length === 0) {
+      setError(
+        "There are no transactions to check.",
+      );
 
-    normalizedRows.forEach(
-      (row) => {
-        const key =
-          createDuplicateKey(row);
+      return;
+    }
 
-        if (seen.has(key)) {
-          duplicates.push({
-            ...row,
-            duplicateOf:
-              seen.get(key),
-          });
-        } else {
-          seen.set(
-            key,
-            row
-          );
-        }
-      }
-    );
+    try {
+      const response =
+        await apiRequest(
+          "/transactions/import/check-duplicates",
+          {
+            method: "POST",
 
-    setDuplicateRows(
-      duplicates
-    );
+            body: JSON.stringify({
+              transactions:
+                normalizedRows.map(
+                  (row) => ({
+                    date: row.date,
+                    type: row.type,
+                    amount: row.amount,
+                    category:
+                      row.category,
+                    paymentMethod:
+                      row.paymentMethod ||
+                      "Bank",
+                    title:
+                      row.title ||
+                      "Imported Transaction",
+                    note:
+                      row.note || "",
+                    importIndex:
+                      row.rowNumber,
+                  }),
+                ),
+            }),
+          },
+        );
 
-    setDuplicateCheckComplete(
-      true
-    );
+      const checkedRows =
+        Array.isArray(
+          response?.transactions,
+        )
+          ? response.transactions
+          : [];
 
-    setCurrentStep(6);
+      const updatedRows =
+        normalizedRows.map(
+          (row, index) => {
+            const checked =
+              checkedRows[index];
+
+            return {
+              ...row,
+              isDuplicate: Boolean(
+                checked?.isDuplicate,
+              ),
+              duplicateReason:
+                checked?.duplicateReason ||
+                null,
+            };
+          },
+        );
+
+      const duplicates =
+        updatedRows.filter(
+          (row) => row.isDuplicate,
+        );
+
+      setNormalizedRows(
+        updatedRows,
+      );
+
+      setDuplicateRows(
+        duplicates,
+      );
+
+      setDuplicateSummary({
+        total:
+          Number(response?.total) ||
+          updatedRows.length,
+
+        duplicateCount:
+          Number(
+            response?.duplicateCount,
+          ) || duplicates.length,
+
+        newCount:
+          Number(response?.newCount) ||
+          updatedRows.length -
+            duplicates.length,
+      });
+
+      setDuplicateCheckComplete(
+        true,
+      );
+
+      setCurrentStep(6);
+    } catch (err) {
+      console.error(
+        "Duplicate check error:",
+        err,
+      );
+
+      setError(
+        err?.message ||
+          "Unable to check duplicates against your Pennywise database.",
+      );
+    }
   }
 
   /*
   |--------------------------------------------------------------------------
-  | RESET / UPLOAD NEW FILE
+  | IMPORT TRANSACTIONS
+  |--------------------------------------------------------------------------
+  */
+
+  async function importTransactions() {
+    setError("");
+    setImportResult(null);
+
+    const invalidCategoryRows =
+      normalizedRows.filter(
+        (row) =>
+          !row.category ||
+          row.category ===
+            "__add_category__",
+      );
+
+    if (invalidCategoryRows.length > 0) {
+      setError(
+        "Please select a real Pennywise category for every transaction before importing.",
+      );
+
+      return;
+    }
+
+    if (normalizedRows.length === 0) {
+      setError(
+        "There are no transactions to import.",
+      );
+
+      return;
+    }
+
+    setImporting(true);
+
+    try {
+      const response =
+        await apiRequest(
+          "/transactions/import",
+          {
+            method: "POST",
+
+            body: JSON.stringify({
+              transactions:
+                normalizedRows.map(
+                  (row) => ({
+                    date: row.date,
+                    type: row.type,
+                    amount: row.amount,
+                    category:
+                      row.category,
+                    paymentMethod:
+                      row.paymentMethod ||
+                      "Bank",
+                    title:
+                      row.title ||
+                      "Imported Transaction",
+                    note:
+                      row.note || "",
+                  }),
+                ),
+            }),
+          },
+        );
+
+      setImportResult({
+        success: true,
+
+        insertedCount:
+          Number(
+            response?.insertedCount,
+          ) ||
+          Number(response?.count) ||
+          0,
+
+        skippedCount:
+          Number(
+            response?.skippedCount,
+          ) || 0,
+
+        message:
+          response?.message ||
+          "Transactions imported successfully.",
+      });
+    } catch (err) {
+      console.error(
+        "Transaction import error:",
+        err,
+      );
+
+      const backendMessage =
+        err?.message ||
+        err?.response?.data
+          ?.message ||
+        err?.data?.message ||
+        err?.error?.message;
+
+      setError(
+        backendMessage ||
+          "Unable to import the transactions into Pennywise. Check the browser Network/Console for the server response.",
+      );
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | UPLOAD NEW FILE
   |--------------------------------------------------------------------------
   */
 
   function uploadNewFile() {
     resetImportState();
+
     setCurrentStep(2);
 
     setTimeout(() => {
@@ -1769,9 +2030,7 @@ function BankImport() {
             <div className="bank-import-progress-step">
               {currentStep >
               step.number ? (
-                <CheckCircle2
-                  size={16}
-                />
+                <CheckCircle2 size={16} />
               ) : (
                 step.number
               )}
@@ -1787,9 +2046,7 @@ function BankImport() {
       {/* MAIN CARD */}
 
       <section className="bank-import-card">
-        {/* ==================================================
-            STEP 1 — SELECT BANK
-            ================================================== */}
+        {/* STEP 1 */}
 
         {currentStep === 1 && (
           <div>
@@ -1804,20 +2061,21 @@ function BankImport() {
                 </span>
 
                 <h2>
-                  Which bank is this CSV from?
+                  Which bank is this CSV
+                  from?
                 </h2>
 
                 <p>
-                  Select your bank so Pennywise
-                  can automatically understand
-                  its CSV format.
+                  Select your bank so
+                  Pennywise can automatically
+                  understand its CSV format.
                 </p>
               </div>
             </div>
 
             <div className="bank-import-bank-grid">
               {Object.values(
-                BANK_PROFILES
+                BANK_PROFILES,
               ).map((bank) => (
                 <button
                   key={bank.id}
@@ -1825,7 +2083,7 @@ function BankImport() {
                   className="bank-import-bank-option"
                   onClick={() =>
                     handleBankSelect(
-                      bank.id
+                      bank.id,
                     )
                   }
                 >
@@ -1857,25 +2115,24 @@ function BankImport() {
 
               <div>
                 <strong>
-                  Why do we ask for your bank?
+                  Why do we ask for your
+                  bank?
                 </strong>
 
                 <p>
-                  Different banks use different
-                  CSV formats. Selecting the bank
-                  lets Pennywise automatically
-                  understand the transaction data
-                  without asking you to manually map
-                  every column.
+                  Different banks use
+                  different CSV formats.
+                  Selecting the bank lets
+                  Pennywise automatically
+                  understand the transaction
+                  data.
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* ==================================================
-            STEP 2 — UPLOAD
-            ================================================== */}
+        {/* STEP 2 */}
 
         {currentStep === 2 && (
           <div>
@@ -1931,19 +2188,20 @@ function BankImport() {
                 onDragLeave={
                   handleDragLeave
                 }
-                onDrop={
-                  handleDrop
-                }
+                onDrop={handleDrop}
                 onClick={
                   openFilePicker
                 }
                 role="button"
                 tabIndex={0}
-                onKeyDown={(event) => {
+                onKeyDown={(
+                  event,
+                ) => {
                   if (
                     event.key ===
                       "Enter" ||
-                    event.key === " "
+                    event.key ===
+                      " "
                   ) {
                     openFilePicker();
                   }
@@ -1954,7 +2212,8 @@ function BankImport() {
                 </div>
 
                 <h3>
-                  Drop your CSV file here
+                  Drop your CSV file
+                  here
                 </h3>
 
                 <p>
@@ -1987,7 +2246,7 @@ function BankImport() {
 
                     <span>
                       {formatFileSize(
-                        selectedFile.size
+                        selectedFile.size,
                       )}
                     </span>
                   </div>
@@ -2023,14 +2282,15 @@ function BankImport() {
 
               <div>
                 <strong>
-                  Your original CSV stays unchanged.
+                  Your original CSV stays
+                  unchanged.
                 </strong>
 
                 <p>
-                  Pennywise reads the CSV locally
-                  and prepares the transaction data
-                  before anything is added to your
-                  account.
+                  Pennywise reads the CSV
+                  locally and prepares the
+                  transaction data before
+                  anything is added.
                 </p>
               </div>
             </div>
@@ -2055,7 +2315,9 @@ function BankImport() {
                   onClick={
                     readCsvFile
                   }
-                  disabled={readingCsv}
+                  disabled={
+                    readingCsv
+                  }
                 >
                   {readingCsv
                     ? "Reading CSV..."
@@ -2072,9 +2334,7 @@ function BankImport() {
           </div>
         )}
 
-        {/* ==================================================
-            STEP 3 — PREVIEW
-            ================================================== */}
+        {/* STEP 3 */}
 
         {currentStep === 3 && (
           <div className="bank-import-preview">
@@ -2085,19 +2345,23 @@ function BankImport() {
                 </span>
 
                 <h2>
-                  CSV detected successfully
+                  CSV detected
+                  successfully
                 </h2>
 
                 <p>
                   Pennywise found{" "}
                   <strong>
                     {csvRowCount.toLocaleString(
-                      "en-IN"
+                      "en-IN",
                     )}
                   </strong>{" "}
-                  transaction records and{" "}
+                  transaction records
+                  and{" "}
                   <strong>
-                    {csvHeaders.length}
+                    {
+                      csvHeaders.length
+                    }
                   </strong>{" "}
                   columns.
                 </p>
@@ -2120,7 +2384,7 @@ function BankImport() {
                 <span>
                   {formatFileSize(
                     selectedFile?.size ||
-                      0
+                      0,
                   )}
                 </span>
               </div>
@@ -2150,7 +2414,7 @@ function BankImport() {
                     >
                       {header}
                     </span>
-                  )
+                  ),
                 )}
               </div>
             </div>
@@ -2166,14 +2430,10 @@ function BankImport() {
                     <tr>
                       {csvHeaders.map(
                         (header) => (
-                          <th
-                            key={
-                              header
-                            }
-                          >
+                          <th key={header}>
                             {header}
                           </th>
-                        )
+                        ),
                       )}
                     </tr>
                   </thead>
@@ -2182,7 +2442,7 @@ function BankImport() {
                     {csvRows.map(
                       (
                         row,
-                        rowIndex
+                        rowIndex,
                       ) => (
                         <tr
                           key={
@@ -2191,7 +2451,7 @@ function BankImport() {
                         >
                           {csvHeaders.map(
                             (
-                              header
+                              header,
                             ) => (
                               <td
                                 key={
@@ -2203,21 +2463,23 @@ function BankImport() {
                                 ] ||
                                   "—"}
                               </td>
-                            )
+                            ),
                           )}
                         </tr>
-                      )
+                      ),
                     )}
                   </tbody>
                 </table>
               </div>
 
-              {csvRowCount > 10 && (
+              {csvRowCount >
+                10 && (
                 <p className="bank-import-preview-note">
-                  Showing the first 10
-                  transactions out of{" "}
+                  Showing the first
+                  10 transactions
+                  out of{" "}
                   {csvRowCount.toLocaleString(
-                    "en-IN"
+                    "en-IN",
                   )}
                   .
                 </p>
@@ -2226,7 +2488,9 @@ function BankImport() {
 
             {error && (
               <div className="bank-import-error">
-                <AlertCircle size={17} />
+                <AlertCircle
+                  size={17}
+                />
 
                 <span>
                   {error}
@@ -2242,9 +2506,7 @@ function BankImport() {
                   setCurrentStep(2)
                 }
               >
-                <ArrowLeft
-                  size={17}
-                />
+                <ArrowLeft size={17} />
                 Back
               </button>
 
@@ -2255,7 +2517,8 @@ function BankImport() {
                   processCsvAutomatically
                 }
               >
-                Process Automatically
+                Process
+                Automatically
                 <Sparkles
                   size={17}
                 />
@@ -2264,9 +2527,7 @@ function BankImport() {
           </div>
         )}
 
-        {/* ==================================================
-            STEP 4 — AUTOMATIC PROCESSING ERROR
-            ================================================== */}
+        {/* STEP 4 */}
 
         {currentStep === 4 && (
           <div className="bank-import-mapping">
@@ -2277,11 +2538,13 @@ function BankImport() {
                 </span>
 
                 <h2>
-                  Automatic processing
+                  Automatic
+                  processing
                 </h2>
 
                 <p>
-                  Pennywise used the selected{" "}
+                  Pennywise used the
+                  selected{" "}
                   <strong>
                     {
                       BANK_PROFILES[
@@ -2289,13 +2552,14 @@ function BankImport() {
                       ]?.shortName
                     }
                   </strong>{" "}
-                  bank profile to understand
-                  the CSV.
+                  bank profile.
                 </p>
               </div>
 
               <div className="bank-import-mapping-icon">
-                <Sparkles size={25} />
+                <Sparkles
+                  size={25}
+                />
               </div>
             </div>
 
@@ -2307,8 +2571,9 @@ function BankImport() {
 
                 <div>
                   <strong>
-                    Pennywise cannot safely
-                    process this file.
+                    Pennywise cannot
+                    safely process
+                    this file.
                   </strong>
 
                   <p>
@@ -2322,15 +2587,16 @@ function BankImport() {
               0 && (
               <div className="bank-import-processing-errors">
                 <h3>
-                  Information Pennywise
-                  could not understand
+                  Information
+                  Pennywise could
+                  not understand
                 </h3>
 
                 <ul>
                   {processingErrors.map(
                     (
                       item,
-                      index
+                      index,
                     ) => (
                       <li
                         key={
@@ -2339,7 +2605,7 @@ function BankImport() {
                       >
                         {item}
                       </li>
-                    )
+                    ),
                   )}
                 </ul>
               </div>
@@ -2350,18 +2616,15 @@ function BankImport() {
 
               <div>
                 <strong>
-                  We will not guess your
-                  financial data.
+                  We will not guess
+                  your financial data.
                 </strong>
 
                 <p>
                   Date, amount and
-                  income/expense type must
-                  be understood safely.
-                  If Pennywise cannot determine
-                  them, the import is stopped
-                  instead of creating incorrect
-                  transactions.
+                  income/expense type
+                  must be understood
+                  safely.
                 </p>
               </div>
             </div>
@@ -2375,10 +2638,11 @@ function BankImport() {
                 </strong>
 
                 <p>
-                  Download the transaction
-                  statement again in CSV format
-                  from your bank and upload that
-                  file.
+                  Download the
+                  transaction statement
+                  again in CSV format
+                  from your bank and
+                  upload that file.
                 </p>
               </div>
             </div>
@@ -2391,9 +2655,7 @@ function BankImport() {
                   setCurrentStep(3)
                 }
               >
-                <ArrowLeft
-                  size={17}
-                />
+                <ArrowLeft size={17} />
                 Back to Preview
               </button>
 
@@ -2411,9 +2673,7 @@ function BankImport() {
           </div>
         )}
 
-        {/* ==================================================
-            STEP 5 — REVIEW
-            ================================================== */}
+        {/* STEP 5 */}
 
         {currentStep === 5 && (
           <div className="bank-import-review">
@@ -2424,13 +2684,15 @@ function BankImport() {
                 </span>
 
                 <h2>
-                  Review your transactions
+                  Review your
+                  transactions
                 </h2>
 
                 <p>
                   Pennywise automatically
-                  prepared the bank transactions.
-                  Select a category where required.
+                  prepared the bank
+                  transactions. Select a
+                  category where required.
                 </p>
               </div>
 
@@ -2459,12 +2721,10 @@ function BankImport() {
                 </span>
 
                 <strong>
-                  {
-                    rowsWithoutCategory.length ===
-                    0
-                      ? validRows.length
-                      : 0
-                  }
+                  {rowsWithoutCategory.length ===
+                  0
+                    ? validRows.length
+                    : 0}
                 </strong>
               </div>
 
@@ -2486,14 +2746,16 @@ function BankImport() {
 
               <div>
                 <strong>
-                  Only Category needs your input.
+                  Only Category needs your
+                  input.
                 </strong>
 
                 <p>
-                  Date, type, amount, payment
-                  method, description and notes
-                  are handled automatically from
-                  your bank CSV.
+                  Date, type, amount,
+                  payment method,
+                  description and notes
+                  are handled
+                  automatically.
                 </p>
               </div>
             </div>
@@ -2505,16 +2767,18 @@ function BankImport() {
                 </strong>
 
                 <span>
-                  Choose the category for
-                  each transaction.
+                  Choose the category
+                  for each transaction.
                 </span>
               </div>
 
               <button
                 type="button"
                 className="btn-secondary"
-                onClick={
-                  handleAddCategory
+                onClick={() =>
+                  handleAddCategory(
+                    null,
+                  )
                 }
               >
                 <Plus size={16} />
@@ -2530,19 +2794,22 @@ function BankImport() {
 
                 <div>
                   <strong>
-                    Loading categories...
+                    Loading
+                    categories...
                   </strong>
 
                   <p>
                     Pennywise is loading
-                    your existing categories.
+                    your existing
+                    categories.
                   </p>
                 </div>
               </div>
             )}
 
             {!loadingCategories &&
-              categories.length === 0 && (
+              categories.length ===
+                0 && (
                 <div className="bank-import-error">
                   <AlertCircle
                     size={17}
@@ -2550,12 +2817,15 @@ function BankImport() {
 
                   <div>
                     <strong>
-                      No categories were found.
+                      No categories were
+                      found.
                     </strong>
 
                     <p>
-                      Please create a category
-                      before importing transactions.
+                      Please create a
+                      category before
+                      importing
+                      transactions.
                     </p>
                   </div>
                 </div>
@@ -2573,30 +2843,16 @@ function BankImport() {
                       <th>
                         Category
                       </th>
-
-                      <th>
-                        Type
-                      </th>
-
-                      <th>
-                        Amount
-                      </th>
-
+                      <th>Type</th>
+                      <th>Amount</th>
                       <th>
                         Payment Method
                       </th>
-
-                      <th>
-                        Date
-                      </th>
-
+                      <th>Date</th>
                       <th>
                         Description
                       </th>
-
-                      <th>
-                        Notes
-                      </th>
+                      <th>Notes</th>
                     </tr>
                   </thead>
 
@@ -2615,15 +2871,29 @@ function BankImport() {
                                 row.category
                               }
                               onChange={(
-                                event
-                              ) =>
-                                handleCategoryChange(
-                                  row.id,
+                                event,
+                              ) => {
+                                const value =
                                   event
                                     .target
-                                    .value
-                                )
-                              }
+                                    .value;
+
+                                if (
+                                  value ===
+                                  "__add_category__"
+                                ) {
+                                  handleAddCategory(
+                                    row.id,
+                                  );
+
+                                  return;
+                                }
+
+                                handleCategoryChange(
+                                  row.id,
+                                  value,
+                                );
+                              }}
                               className={
                                 !row.category
                                   ? "bank-import-category-select missing"
@@ -2637,21 +2907,12 @@ function BankImport() {
                               {categories
                                 .filter(
                                   (
-                                    category
+                                    category,
                                   ) => {
-                                    /*
-                                    | If the API returns category type,
-                                    | show categories appropriate for
-                                    | this transaction.
-                                    |
-                                    | If type is not present on the
-                                    | category object, show it.
-                                    */
-
                                     const categoryType =
                                       String(
                                         category?.type ??
-                                          ""
+                                          "",
                                       )
                                         .trim()
                                         .toLowerCase();
@@ -2666,25 +2927,25 @@ function BankImport() {
                                       categoryType ===
                                       row.type
                                     );
-                                  }
+                                  },
                                 )
                                 .map(
                                   (
-                                    category
+                                    category,
                                   ) => (
                                     <option
                                       key={getCategoryId(
-                                        category
+                                        category,
                                       )}
                                       value={getCategoryId(
-                                        category
+                                        category,
                                       )}
                                     >
                                       {getCategoryName(
-                                        category
+                                        category,
                                       )}
                                     </option>
-                                  )
+                                  ),
                                 )}
 
                               <option value="__add_category__">
@@ -2695,9 +2956,7 @@ function BankImport() {
 
                           <td>
                             <span
-                              className={`bank-import-type ${
-                                row.type
-                              }`}
+                              className={`bank-import-type ${row.type}`}
                             >
                               {row.type ===
                               "income"
@@ -2709,20 +2968,20 @@ function BankImport() {
                           <td>
                             <strong>
                               {Number(
-                                row.amount
+                                row.amount,
                               ).toLocaleString(
                                 "en-IN",
                                 {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2,
-                                }
+                                },
                               )}
                             </strong>
                           </td>
 
                           <td>
                             {row.paymentMethod ||
-                              "—"}
+                              "Bank"}
                           </td>
 
                           <td>
@@ -2801,9 +3060,7 @@ function BankImport() {
                   setCurrentStep(3)
                 }
               >
-                <ArrowLeft
-                  size={17}
-                />
+                <ArrowLeft size={17} />
                 Back to Preview
               </button>
 
@@ -2818,7 +3075,8 @@ function BankImport() {
                   checkDuplicates
                 }
               >
-                Continue to Duplicate Check
+                Continue to Duplicate
+                Check
                 <RefreshCw
                   size={17}
                 />
@@ -2827,9 +3085,7 @@ function BankImport() {
           </div>
         )}
 
-        {/* ==================================================
-            STEP 6 — DUPLICATE CHECK
-            ================================================== */}
+        {/* STEP 6 */}
 
         {currentStep === 6 && (
           <div className="bank-import-review">
@@ -2844,9 +3100,10 @@ function BankImport() {
                 </h2>
 
                 <p>
-                  Pennywise checked the imported
-                  transactions using the complete
-                  transaction details.
+                  Pennywise checked the
+                  imported transactions
+                  against your existing
+                  database.
                 </p>
               </div>
 
@@ -2865,77 +3122,28 @@ function BankImport() {
 
             {duplicateRows.length ===
             0 ? (
-              <>
-                <div className="bank-import-info">
-                  <CheckCircle2
-                    size={17}
-                  />
+              <div className="bank-import-info">
+                <CheckCircle2
+                  size={17}
+                />
 
-                  <div>
-                    <strong>
-                      No duplicate transactions
-                      were found in this import.
-                    </strong>
+                <div>
+                  <strong>
+                    No duplicates were
+                    found.
+                  </strong>
 
-                    <p>
-                      The imported transactions
-                      have different transaction
-                      signatures.
-                    </p>
-                  </div>
+                  <p>
+                    All{" "}
+                    {
+                      duplicateSummary.newCount
+                    }{" "}
+                    transactions are
+                    new and can be
+                    imported.
+                  </p>
                 </div>
-
-                <div className="bank-import-info">
-                  <Sparkles size={17} />
-
-                  <div>
-                    <strong>
-                      Important duplicate rule
-                    </strong>
-
-                    <p>
-                      Amount is part of the
-                      duplicate check. If the
-                      date, category, payment
-                      method, description and
-                      other details are the same
-                      but the amount is different,
-                      Pennywise treats them as
-                      different transactions.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bank-import-actions">
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() =>
-                      setCurrentStep(5)
-                    }
-                  >
-                    <ArrowLeft
-                      size={17}
-                    />
-                    Back to Review
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    onClick={() =>
-                      setError(
-                        "Final import will be connected here next. No transactions have been added yet."
-                      )
-                    }
-                  >
-                    Continue to Final Import
-                    <ArrowRight
-                      size={17}
-                    />
-                  </button>
-                </div>
-              </>
+              </div>
             ) : (
               <>
                 <div className="bank-import-error">
@@ -2947,28 +3155,28 @@ function BankImport() {
                     <strong>
                       {
                         duplicateRows.length
-                      } duplicate transaction
-                      {
-                        duplicateRows.length !==
-                        1
-                          ? "s"
-                          : ""
                       }{" "}
+                      duplicate
+                      transaction
+                      {duplicateRows.length !==
+                      1
+                        ? "s"
+                        : ""}{" "}
                       found.
                     </strong>
 
                     <p>
-                      These transactions have
-                      the same date, type, amount,
-                      category, payment method,
-                      description and notes.
+                      Duplicate
+                      transactions will
+                      be skipped.
                     </p>
                   </div>
                 </div>
 
                 <div className="bank-import-table-section">
                   <h3>
-                    Duplicate Transactions
+                    Duplicate
+                    Transactions
                   </h3>
 
                   <div className="bank-import-table-wrapper">
@@ -2978,138 +3186,142 @@ function BankImport() {
                           <th>
                             Date
                           </th>
-
                           <th>
                             Type
                           </th>
-
                           <th>
                             Amount
                           </th>
-
                           <th>
                             Category
                           </th>
-
                           <th>
                             Payment Method
                           </th>
-
                           <th>
                             Description
+                          </th>
+                          <th>
+                            Reason
                           </th>
                         </tr>
                       </thead>
 
                       <tbody>
                         {duplicateRows.map(
-                          (row) => (
-                            <tr
-                              key={
-                                row.id
-                              }
-                            >
-                              <td>
-                                {
-                                  row.date
-                                }
-                              </td>
+                          (row) => {
+                            const category =
+                              categories.find(
+                                (
+                                  item,
+                                ) =>
+                                  getCategoryId(
+                                    item,
+                                  ) ===
+                                  row.category,
+                              );
 
-                              <td>
-                                {
-                                  row.type
+                            return (
+                              <tr
+                                key={
+                                  row.id
                                 }
-                              </td>
-
-                              <td>
-                                {Number(
-                                  row.amount
-                                ).toLocaleString(
-                                  "en-IN",
+                              >
+                                <td>
                                   {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
+                                    row.date
                                   }
-                                )}
-                              </td>
+                                </td>
 
-                              <td>
-                                {
-                                  categories.find(
-                                    (
-                                      category
-                                    ) =>
-                                      getCategoryId(
-                                        category
-                                      ) ===
-                                      row.category
-                                  )
+                                <td>
+                                  {row.type ===
+                                  "income"
+                                    ? "Income"
+                                    : "Expense"}
+                                </td>
+
+                                <td>
+                                  {Number(
+                                    row.amount,
+                                  ).toLocaleString(
+                                    "en-IN",
+                                    {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    },
+                                  )}
+                                </td>
+
+                                <td>
+                                  {category
                                     ? getCategoryName(
-                                        categories.find(
-                                          (
-                                            category
-                                          ) =>
-                                            getCategoryId(
-                                              category
-                                            ) ===
-                                            row.category
-                                        )
+                                        category,
                                       )
-                                    : "—"
-                                }
-                              </td>
+                                    : "—"}
+                                </td>
 
-                              <td>
-                                {
-                                  row.paymentMethod ||
-                                  "—"
-                                }
-                              </td>
+                                <td>
+                                  {row.paymentMethod ||
+                                    "Bank"}
+                                </td>
 
-                              <td>
-                                {
-                                  row.title ||
-                                  "—"
-                                }
-                              </td>
-                            </tr>
-                          )
+                                <td>
+                                  {row.title ||
+                                    "—"}
+                                </td>
+
+                                <td>
+                                  {row.duplicateReason ||
+                                    "Duplicate transaction"}
+                                </td>
+                              </tr>
+                            );
+                          },
                         )}
                       </tbody>
                     </table>
                   </div>
                 </div>
-
-                <div className="bank-import-actions">
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() =>
-                      setCurrentStep(5)
-                    }
-                  >
-                    <ArrowLeft
-                      size={17}
-                    />
-                    Back to Review
-                  </button>
-
-                  <button
-                    type="button"
-                    className="btn-primary"
-                    onClick={() =>
-                      setError(
-                        "Duplicate resolution will be implemented before the final import. No transactions have been added yet."
-                      )
-                    }
-                  >
-                    Review Duplicates
-                    <RefreshCw
-                      size={17}
-                    />
-                  </button>
-                </div>
               </>
+            )}
+
+            {importResult && (
+              <div className="bank-import-info">
+                <CheckCircle2
+                  size={17}
+                />
+
+                <div>
+                  <strong>
+                    {
+                      importResult.message
+                    }
+                  </strong>
+
+                  <p>
+                    Added{" "}
+                    {
+                      importResult.insertedCount
+                    }{" "}
+                    transaction
+                    {importResult.insertedCount !==
+                    1
+                      ? "s"
+                      : ""}
+                    {importResult.skippedCount >
+                    0
+                      ? ` and skipped ${
+                          importResult.skippedCount
+                        } duplicate${
+                          importResult.skippedCount !==
+                          1
+                            ? "s"
+                            : ""
+                        }.`
+                      : "."}
+                  </p>
+                </div>
+              </div>
             )}
 
             {error && (
@@ -3121,6 +3333,92 @@ function BankImport() {
                 <span>
                   {error}
                 </span>
+              </div>
+            )}
+
+            <div className="bank-import-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() =>
+                  setCurrentStep(5)
+                }
+                disabled={importing}
+              >
+                <ArrowLeft size={17} />
+                Back to Review
+              </button>
+
+              {!importResult ? (
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={
+                    importTransactions
+                  }
+                  disabled={
+                    importing
+                  }
+                >
+                  {importing
+                    ? "Importing..."
+                    : duplicateSummary.newCount >
+                      0
+                    ? `Import ${
+                        duplicateSummary.newCount
+                      } New Transaction${
+                        duplicateSummary.newCount !==
+                        1
+                          ? "s"
+                          : ""
+                      }`
+                    : "Import Transactions"}
+
+                  {!importing && (
+                    <ArrowRight
+                      size={17}
+                    />
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => {
+                    window.dispatchEvent(
+                      new Event(
+                        "transactionsUpdated",
+                      ),
+                    );
+
+                    navigate(
+                      "/transactions",
+                    );
+                  }}
+                >
+                  View Transactions
+                  <ArrowRight
+                    size={17}
+                  />
+                </button>
+              )}
+            </div>
+
+            {!importResult && (
+              <div className="bank-import-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={
+                    uploadNewFile
+                  }
+                  disabled={
+                    importing
+                  }
+                >
+                  <Upload size={17} />
+                  Upload Another CSV
+                </button>
               </div>
             )}
           </div>

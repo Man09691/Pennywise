@@ -37,6 +37,7 @@ const transactionSchema = new mongoose.Schema(
                 "Credit Card",
                 "Bank Transfer",
                 "Cheque",
+                "ATM",
                 "Other",
             ],
             required: true,
