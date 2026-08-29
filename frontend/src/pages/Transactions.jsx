@@ -889,8 +889,8 @@ function Transactions() {
           className="transactions-import-button"
           onClick={() => navigate("/transactions/import")}
         >
-          <Upload size={17} />
-          Import Bank CSV
+          <Upload size={18} />
+          Upload Bank Transaction
         </button>
       </div>
 

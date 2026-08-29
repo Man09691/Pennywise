@@ -9755,3 +9755,145 @@ body {
         padding: 8px 10px;
     }
 }
+
+/* =========================================================
+   TRANSACTIONS HEADER ACTIONS
+   ========================================================= */
+
+.transactions-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.transactions-header-left {
+    min-width: 0;
+}
+
+/* =========================================================
+   UPLOAD BANK TRANSACTION BUTTON
+   ========================================================= */
+
+.transactions-import-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    min-height: 42px;
+    padding: 10px 16px;
+
+    border: 1px solid rgba(124, 58, 237, 0.18);
+    border-radius: 12px;
+
+    background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 4px 12px rgba(124, 58, 237, 0.06);
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.transactions-import-button svg {
+    flex-shrink: 0;
+
+    transition:
+        transform 0.2s ease;
+}
+
+.transactions-import-button:hover {
+    background: #eee8ff;
+    color: #6d28d9;
+
+    border-color: rgba(124, 58, 237, 0.28);
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 18px rgba(124, 58, 237, 0.12);
+}
+
+.transactions-import-button:hover svg {
+    transform: translateY(-1px);
+}
+
+.transactions-import-button:active {
+    transform: translateY(0) scale(0.97);
+
+    box-shadow:
+        0 3px 8px rgba(124, 58, 237, 0.08);
+}
+
+.transactions-import-button:focus-visible {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px rgba(124, 58, 237, 0.14),
+        0 4px 12px rgba(124, 58, 237, 0.08);
+}
+
+/* =========================================================
+   HEADER BUTTON GROUP
+   ========================================================= */
+
+.transactions-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+    .transactions-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .transactions-header-actions {
+        width: 100%;
+    }
+
+    .transactions-header-actions button {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .transactions-header-actions {
+        flex-direction: column;
+    }
+
+    .transactions-header-actions button {
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    .transactions-import-button,
+    .transactions-import-button svg {
+        transition: none;
+    }
+}

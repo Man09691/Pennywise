@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Papa from "papaparse";
 import { apiRequest } from "../services/api";
+import { extractPdfTransactions, isPdfFile } from "../services/pdfImportService";
 
 /*
 |--------------------------------------------------------------------------
@@ -114,32 +115,56 @@ const BANK_PROFILES = {
     name: "ICICI Bank",
     shortName: "ICICI",
     mapping: {
-      date: ["date", "transaction date", "txn date", "value date"],
+      date: [
+        "date",
+        "transaction date",
+        "txn date",
+        "value date",
+        "transaction_date",
+        "txn_date",
+      ],
       type: [
         "type",
         "transaction type",
-        "cr/dr",
-        "dr/cr",
         "credit/debit",
         "debit/credit",
+        "cr/dr",
+        "dr/cr",
+        "credit debit",
+        "debit credit",
       ],
-      amount: ["amount", "transaction amount", "txn amount", "value"],
+      amount: [
+        "amount",
+        "transaction amount",
+        "txn amount",
+        "value",
+        "transaction value",
+      ],
       paymentMethod: [
         "payment method",
         "mode",
         "transaction mode",
         "mode of payment",
         "payment mode",
+        "channel",
       ],
       title: [
         "description",
         "transaction description",
         "narration",
         "remarks",
+        "transaction remarks",
         "particulars",
         "details",
+        "transaction details",
       ],
-      note: ["notes", "note", "comments", "remark", "remarks"],
+      note: [
+        "notes",
+        "note",
+        "comments",
+        "remark",
+        "remarks",
+      ],
     },
   },
 
@@ -239,10 +264,13 @@ const EMPTY_MAPPING = {
 
 function normalizeHeader(value) {
   return String(value ?? "")
+    .replace(/^\uFEFF/, "")
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ")
-    .replace(/[_-]/g, " ");
+    .replace(/[_-]/g, " ")
+    .replace(/\s*\(\s*/g, "(")
+    .replace(/\s*\)\s*/g, ")");
 }
 
 /*
@@ -288,9 +316,13 @@ function automaticallyMapColumns(headers, bankProfile) {
     "credit amount",
     "credit_amt",
     "credit amt",
+    "credit amount(inr)",
     "cr amount",
     "cr amt",
     "credited amount",
+    "deposit",
+    "deposit amount",
+    "deposit amount(inr)",
   ]);
 
   mapping.debitAmount = findHeader([
@@ -298,9 +330,13 @@ function automaticallyMapColumns(headers, bankProfile) {
     "debit amount",
     "debit_amt",
     "debit amt",
+    "debit amount(inr)",
     "dr amount",
     "dr amt",
     "debited amount",
+    "withdrawal",
+    "withdrawal amount",
+    "withdrawal amount(inr)",
   ]);
 
   return mapping;
@@ -353,6 +389,8 @@ function BankImport() {
   const [csvRows, setCsvRows] = useState([]);
   const [csvRowCount, setCsvRowCount] = useState(0);
   const [readingCsv, setReadingCsv] = useState(false);
+  const [selectedFileType, setSelectedFileType] = useState("");
+  const [pdfParsedData, setPdfParsedData] = useState(null);
 
   /*
   |--------------------------------------------------------------------------
@@ -507,6 +545,14 @@ function BankImport() {
               setCsvRows(parsed.csvRows);
             }
 
+            if (parsed.selectedFileType) {
+              setSelectedFileType(parsed.selectedFileType);
+            }
+
+            if (parsed.pdfParsedData) {
+              setPdfParsedData(parsed.pdfParsedData);
+            }
+
             if (typeof parsed.csvRowCount === "number") {
               setCsvRowCount(parsed.csvRowCount);
             }
@@ -597,6 +643,8 @@ function BankImport() {
 
   function resetImportState() {
     setSelectedFile(null);
+    setSelectedFileType("");
+    setPdfParsedData(null);
 
     setCsvHeaders([]);
     setCsvRows([]);
@@ -660,15 +708,17 @@ function BankImport() {
       file.type === "text/csv" ||
       file.name.toLowerCase().endsWith(".csv");
 
-    if (!isCsv) {
-      setError("Please select a CSV file.");
+    const isPdf = isPdfFile(file);
+
+    if (!isCsv && !isPdf) {
+      setError("Please select a CSV or PDF bank statement.");
       return false;
     }
 
     const maxSize = 10 * 1024 * 1024;
 
     if (file.size > maxSize) {
-      setError("CSV file must be smaller than 10 MB.");
+      setError("Bank statement must be smaller than 10 MB.");
       return false;
     }
 
@@ -688,6 +738,11 @@ function BankImport() {
     }
 
     setSelectedFile(file);
+
+    const fileType = isPdfFile(file) ? "pdf" : "csv";
+    setSelectedFileType(fileType);
+
+    setPdfParsedData(null);
 
     setCsvHeaders([]);
     setCsvRows([]);
@@ -797,75 +852,441 @@ function BankImport() {
   |--------------------------------------------------------------------------
   */
 
-  function readCsvFile() {
+  async function readCsvFile() {
     if (!selectedFile) {
-      setError("Please select a CSV file first.");
+      setError("Please select a CSV or PDF file first.");
       return;
     }
 
     setError("");
     setReadingCsv(true);
 
+    /*
+     * PDF path
+     *
+     * PDF extraction happens entirely in the browser. The PDF parser
+     * searches every page for a transaction table and returns the same
+     * normalized transaction shape used by the later import stages.
+     */
+    if (isPdfFile(selectedFile)) {
+      try {
+        const parsedPdf = await extractPdfTransactions(
+          selectedFile,
+          selectedBank,
+        );
+
+        setPdfParsedData(parsedPdf);
+
+        const pdfHeaders = parsedPdf.columns.map(
+          (column) => column.label,
+        );
+
+        const pdfPreviewRows = parsedPdf.rows
+          .slice(0, 10)
+          .map((row) => {
+            const previewRow = {};
+
+            for (const column of parsedPdf.columns) {
+              const raw = row.originalRow || {};
+
+              let value = "";
+
+              if (column.type === "date") {
+                value = raw.rawDate || row.date || "";
+              } else if (column.type === "title") {
+                value = raw.title || row.title || "";
+              } else if (column.type === "debit") {
+                value =
+                  raw.debit === null || raw.debit === undefined
+                    ? ""
+                    : raw.debit;
+              } else if (column.type === "credit") {
+                value =
+                  raw.credit === null || raw.credit === undefined
+                    ? ""
+                    : raw.credit;
+              } else if (column.type === "amount") {
+                value =
+                  raw.amount === null || raw.amount === undefined
+                    ? ""
+                    : raw.amount;
+              } else if (column.type === "balance") {
+                value =
+                  raw.balance === null || raw.balance === undefined
+                    ? ""
+                    : raw.balance;
+              }
+
+              previewRow[column.label] = value;
+            }
+
+            return previewRow;
+          });
+
+        setCsvHeaders(pdfHeaders);
+        setCsvRows(pdfPreviewRows);
+        setCsvRowCount(parsedPdf.rowCount);
+
+        setCurrentStep(3);
+      } catch (err) {
+        console.error("PDF processing error:", err);
+
+        setProcessingError(
+          err?.message ||
+            "Pennywise could not safely read this PDF bank statement.",
+        );
+
+        setProcessingErrors([
+          err?.message ||
+            "PDF extraction failed.",
+        ]);
+
+        setCurrentStep(4);
+      } finally {
+        setReadingCsv(false);
+      }
+
+      return;
+    }
+
+    /*
+     * Existing CSV path.
+     */
     Papa.parse(selectedFile, {
-      header: true,
-      skipEmptyLines: true,
+      header: false,
+      skipEmptyLines: false,
       dynamicTyping: false,
 
       complete: (results) => {
         try {
-          const fields = results.meta.fields || [];
-          const rows = results.data || [];
+          const rawRows = Array.isArray(results.data)
+            ? results.data
+            : [];
 
-          if (!fields.length) {
-            setError(
-              "The CSV file does not contain a readable header row.",
-            );
-
-            setReadingCsv(false);
-            return;
-          }
-
-          const cleanedRows = rows.filter((row) =>
-            Object.values(row).some(
-              (value) => String(value ?? "").trim() !== "",
-            ),
+          const parsed = extractTransactionTable(
+            rawRows,
+            selectedBank,
           );
 
-          if (!cleanedRows.length) {
-            setError(
-              "The CSV file does not contain any usable transaction records.",
+          if (!parsed.headers.length) {
+            throw new Error(
+              "Pennywise could not find a transaction table header in this statement.",
             );
-
-            setReadingCsv(false);
-            return;
           }
 
-          setCsvHeaders(fields);
-          setCsvRows(cleanedRows.slice(0, 10));
-          setCsvRowCount(cleanedRows.length);
+          if (!parsed.rows.length) {
+            throw new Error(
+              "Pennywise found the statement header, but no transaction rows could be identified.",
+            );
+          }
+
+          setCsvHeaders(parsed.headers);
+          setCsvRows(parsed.rows.slice(0, 10));
+          setCsvRowCount(parsed.rows.length);
 
           setCurrentStep(3);
         } catch (err) {
-          console.error("CSV processing error:", err);
+          console.error("Statement processing error:", err);
 
-          setError(
-            "Something went wrong while reading the CSV file.",
+          setProcessingError(
+            err?.message ||
+              "Something went wrong while reading the statement or PDF file.",
           );
+
+          setProcessingErrors([
+            err?.message ||
+              "Statement reading failed.",
+          ]);
+
+          setCurrentStep(4);
         } finally {
           setReadingCsv(false);
         }
       },
 
       error: (parseError) => {
-        console.error("CSV parsing error:", parseError);
+        console.error("CSV/PDF parsing error:", parseError);
 
-        setError(
-          parseError?.message || "Unable to read the CSV file.",
+        setProcessingError(
+          parseError?.message ||
+            "Unable to read the statement or PDF file.",
         );
 
+        setProcessingErrors([
+          parseError?.message ||
+            "CSV/PDF parsing failed.",
+        ]);
+
+        setCurrentStep(4);
         setReadingCsv(false);
       },
     });
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | FIND THE REAL TRANSACTION HEADER
+  |--------------------------------------------------------------------------
+  |
+  | Real bank CSVs are not always "header on row 1" files.
+  | ICICI exports can contain account information, search criteria,
+  | and other metadata before the actual transaction table.
+  |
+  | Example ICICI header:
+  | S No. | Value Date | Transaction Date | Cheque Number |
+  | Transaction Remarks | Withdrawal Amount(INR) |
+  | Deposit Amount(INR) | Balance(INR)
+  |
+  | We detect that row instead of assuming the first row is the header.
+  |--------------------------------------------------------------------------
+  */
+
+  function findTransactionHeaderRow(rawRows, bankId) {
+    let bestIndex = -1;
+    let bestScore = 0;
+
+    const profile = BANK_PROFILES[bankId] || BANK_PROFILES.other;
+
+    rawRows.forEach((row, index) => {
+      if (!Array.isArray(row)) {
+        return;
+      }
+
+      const normalizedCells = row
+        .map(normalizeHeader)
+        .filter(Boolean);
+
+      if (!normalizedCells.length) {
+        return;
+      }
+
+      let score = 0;
+
+      const hasAny = (aliases) =>
+        aliases.some((alias) =>
+          normalizedCells.includes(normalizeHeader(alias)),
+        );
+
+      if (hasAny(profile.mapping.date)) score += 4;
+      if (hasAny(profile.mapping.title)) score += 3;
+      if (hasAny(profile.mapping.type)) score += 2;
+      if (hasAny(profile.mapping.amount)) score += 2;
+
+      const hasCredit = hasAny([
+        "credit",
+        "credit amount",
+        "credit amt",
+        "cr amount",
+        "cr amt",
+        "credited amount",
+        "deposit amount",
+        "deposit amount(inr)",
+        "deposit",
+      ]);
+
+      const hasDebit = hasAny([
+        "debit",
+        "debit amount",
+        "debit amt",
+        "dr amount",
+        "dr amt",
+        "debited amount",
+        "withdrawal amount",
+        "withdrawal amount(inr)",
+        "withdrawal",
+      ]);
+
+      if (hasCredit) score += 3;
+      if (hasDebit) score += 3;
+
+      if (bankId === "icici") {
+        if (hasAny(["value date"])) score += 4;
+        if (hasAny(["transaction date"])) score += 4;
+        if (hasAny(["transaction remarks"])) score += 5;
+        if (hasAny(["withdrawal amount(inr)"])) score += 5;
+        if (hasAny(["deposit amount(inr)"])) score += 5;
+        if (hasAny(["balance(inr)"])) score += 2;
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestIndex = index;
+      }
+    });
+
+    return bestIndex;
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | BUILD TRANSACTION OBJECTS FROM THE DETECTED TABLE
+  |--------------------------------------------------------------------------
+  */
+
+  function extractTransactionTable(rawRows, bankId) {
+    const headerIndex = findTransactionHeaderRow(
+      rawRows,
+      bankId,
+    );
+
+    if (headerIndex < 0) {
+      return {
+        headers: [],
+        rows: [],
+        headerIndex: -1,
+      };
+    }
+
+    const headerRow = Array.isArray(rawRows[headerIndex])
+      ? rawRows[headerIndex]
+      : [];
+
+    const columns = [];
+    const usedNames = new Set();
+
+    headerRow.forEach((cell, columnIndex) => {
+      const header = String(cell ?? "")
+        .replace(/^\uFEFF/, "")
+        .trim();
+
+      if (!header) {
+        return;
+      }
+
+      let uniqueHeader = header;
+      let suffix = 2;
+
+      while (usedNames.has(normalizeHeader(uniqueHeader))) {
+        uniqueHeader = `${header} ${suffix}`;
+        suffix += 1;
+      }
+
+      usedNames.add(normalizeHeader(uniqueHeader));
+
+      columns.push({
+        index: columnIndex,
+        header: uniqueHeader,
+      });
+    });
+
+    const headers = columns.map((column) => column.header);
+
+    const rows = [];
+
+    rawRows.slice(headerIndex + 1).forEach((rawRow, relativeIndex) => {
+      if (!Array.isArray(rawRow)) {
+        return;
+      }
+
+      const row = {};
+
+      columns.forEach((column) => {
+        row[column.header] = String(
+          rawRow[column.index] ?? "",
+        ).trim();
+      });
+
+      const nonEmptyValues = Object.values(row).filter(
+        (value) => String(value ?? "").trim() !== "",
+      );
+
+      if (!nonEmptyValues.length) {
+        return;
+      }
+
+      row.__pennywiseRowNumber =
+        headerIndex + relativeIndex + 2;
+
+      if (isLikelyTransactionRow(row, bankId)) {
+        rows.push(row);
+      }
+    });
+
+    return {
+      headers,
+      rows,
+      headerIndex,
+    };
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | TRANSACTION ROW DETECTION
+  |--------------------------------------------------------------------------
+  |
+  | This prevents ICICI footer text such as "Legends Used in Account
+  | Statement" from becoming fake transactions.
+  |--------------------------------------------------------------------------
+  */
+
+  function isLikelyTransactionRow(row, bankId) {
+    const normalizedKeys = Object.keys(row).map((key) => ({
+      key,
+      normalized: normalizeHeader(key),
+    }));
+
+    const findKey = (aliases) => {
+      const normalizedAliases = aliases.map(normalizeHeader);
+
+      return (
+        normalizedKeys.find((item) =>
+          normalizedAliases.includes(item.normalized),
+        )?.key || ""
+      );
+    };
+
+    const dateKey = findKey([
+      "transaction date",
+      "txn date",
+      "value date",
+      "date",
+    ]);
+
+    const amountKeys = [
+      findKey([
+        "amount",
+        "transaction amount",
+        "txn amount",
+        "value",
+      ]),
+      findKey([
+        "withdrawal amount",
+        "withdrawal amount(inr)",
+        "debit amount",
+        "debit amount(inr)",
+        "debit",
+      ]),
+      findKey([
+        "deposit amount",
+        "deposit amount(inr)",
+        "credit amount",
+        "credit amount(inr)",
+        "credit",
+      ]),
+    ].filter(Boolean);
+
+    const dateValue = dateKey
+      ? String(row[dateKey] ?? "").trim()
+      : "";
+
+    const hasDate =
+      /^\d{1,2}[\/-]\d{1,2}[\/-]\d{4}$/.test(dateValue) ||
+      /^\d{4}-\d{1,2}-\d{1,2}$/.test(dateValue);
+
+    const hasAmount = amountKeys.some((key) => {
+      const value = String(row[key] ?? "")
+        .replace(/,/g, "")
+        .replace(/[₹$€£]/g, "")
+        .trim();
+
+      return value !== "" && value !== "-";
+    });
+
+    if (bankId === "icici") {
+      return hasDate && hasAmount;
+    }
+
+    return hasDate && hasAmount;
   }
 
   /*
@@ -1254,8 +1675,63 @@ function BankImport() {
       type: "",
       amount: null,
       error:
-        "Income/Expense type could not be determined from this CSV row.",
+        "Income/Expense type could not be determined from this statement row.",
     };
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | PAYMENT METHOD DERIVATION
+  |--------------------------------------------------------------------------
+  |
+  | ICICI's CSV does not provide a dedicated payment-method column.
+  | We derive a safe label from the transaction remarks instead of
+  | using the generic "Bank" label for every row.
+  |--------------------------------------------------------------------------
+  */
+
+  function derivePaymentMethod(title) {
+    const raw = String(title ?? "")
+      .trim()
+      .toUpperCase();
+
+    if (!raw) {
+      return "Bank";
+    }
+
+    if (raw.includes("UPI")) {
+      return "UPI";
+    }
+
+    if (raw.includes("IMPS")) {
+      return "IMPS";
+    }
+
+    if (raw.includes("NEFT")) {
+      return "Bank Transfer";
+    }
+
+    if (raw.includes("RTGS")) {
+      return "Bank Transfer";
+    }
+
+    if (raw.includes("ATM") || raw.includes("CASH WITHDRAWAL")) {
+      return "Cash";
+    }
+
+    if (raw.includes("BIL") || raw.includes("BPAY") || raw.includes("BBPS")) {
+      return "Bank Transfer";
+    }
+
+    if (raw.includes("VPS") || raw.includes("IPS") || raw.includes("DEBIT CARD")) {
+      return "Debit Card";
+    }
+
+    if (raw.includes("CREDIT CARD")) {
+      return "Credit Card";
+    }
+
+    return "Bank";
   }
 
   /*
@@ -1275,15 +1751,14 @@ function BankImport() {
         mapping,
       );
 
-    const paymentMethod = getColumnValue(
-      row,
-      mapping.paymentMethod,
-    );
-
     const title = getColumnValue(
       row,
       mapping.title,
     );
+
+    const paymentMethod =
+      getColumnValue(row, mapping.paymentMethod) ||
+      derivePaymentMethod(title);
 
     const note = getColumnValue(
       row,
@@ -1295,7 +1770,8 @@ function BankImport() {
         .toString(36)
         .slice(2, 8)}`,
 
-      rowNumber: index + 2,
+      rowNumber:
+        Number(row.__pennywiseRowNumber) || index + 2,
 
       date,
 
@@ -1336,7 +1812,91 @@ function BankImport() {
     }
 
     if (!csvHeaders.length) {
-      setError("Please read the CSV file first.");
+      setError("Please read the statement or PDF file first.");
+      return;
+    }
+
+    /*
+     * PDF automatic processing.
+     *
+     * The PDF service has already identified the table and normalized
+     * the financial direction. We still run the same safety validation
+     * before entering the existing Review step.
+     */
+    if (selectedFileType === "pdf") {
+      if (!pdfParsedData?.rows?.length) {
+        setProcessingError(
+          "Pennywise could not find usable transaction rows in this PDF.",
+        );
+
+        setProcessingErrors([
+          "No transaction rows were extracted from the PDF.",
+        ]);
+
+        setCurrentStep(4);
+        return;
+      }
+
+      const rowsWithErrors = pdfParsedData.rows.map((row) => {
+        const errors = Array.isArray(row.errors)
+          ? [...row.errors]
+          : [];
+
+        if (!row.date) {
+          errors.push("Date could not be determined");
+        }
+
+        if (
+          row.amount === null ||
+          row.amount === undefined ||
+          !Number.isFinite(Number(row.amount)) ||
+          Number(row.amount) <= 0
+        ) {
+          errors.push("Amount could not be determined");
+        }
+
+        if (!row.type) {
+          errors.push(
+            "Income/Expense type could not be determined",
+          );
+        }
+
+        return {
+          ...row,
+          errors: [...new Set(errors)],
+        };
+      });
+
+      const invalidRows = rowsWithErrors.filter(
+        (row) => row.errors.length > 0,
+      );
+
+      if (invalidRows.length > 0) {
+        setNormalizedRows(rowsWithErrors);
+
+        setProcessingErrors(
+          invalidRows
+            .slice(0, 10)
+            .map(
+              (row) =>
+                `Row ${row.rowNumber}: ${row.errors.join(", ")}`,
+            ),
+        );
+
+        setProcessingError(
+          `${invalidRows.length} transaction${
+            invalidRows.length !== 1 ? "s" : ""
+          } could not be safely understood from the PDF.`,
+        );
+
+        setCurrentStep(4);
+        return;
+      }
+
+      setNormalizedRows(rowsWithErrors);
+      setProcessingError("");
+      setProcessingErrors([]);
+      setCurrentStep(5);
       return;
     }
 
@@ -1376,7 +1936,7 @@ function BankImport() {
 
     if (missingColumns.length > 0) {
       setProcessingError(
-        `Pennywise cannot safely process this CSV because ${missingColumns.join(
+        `Pennywise cannot safely process this statement because ${missingColumns.join(
           " and ",
         )} could not be identified.`,
       );
@@ -1394,33 +1954,44 @@ function BankImport() {
     }
 
     Papa.parse(selectedFile, {
-      header: true,
-      skipEmptyLines: true,
+      header: false,
+      skipEmptyLines: false,
       dynamicTyping: false,
 
       complete: (results) => {
         try {
-          const rows = results.data || [];
+          const rawRows = Array.isArray(results.data)
+            ? results.data
+            : [];
 
-          const cleanedRows =
-            rows.filter((row) =>
-              Object.values(row).some(
-                (value) =>
-                  String(value ?? "").trim() !== "",
-              ),
+          const parsed = extractTransactionTable(
+            rawRows,
+            selectedBank,
+          );
+
+          if (!parsed.headers.length) {
+            throw new Error(
+              "Pennywise could not find the transaction table header in this statement.",
             );
+          }
 
-          const normalized =
-            cleanedRows.map((row, index) =>
+          if (!parsed.rows.length) {
+            throw new Error(
+              "Pennywise found the table header but could not identify any transaction rows.",
+            );
+          }
+
+          const normalized = parsed.rows.map(
+            (row, index) =>
               normalizeRow(
                 row,
                 index,
                 mapping,
               ),
-            );
+          );
 
-          const rowsWithErrors =
-            normalized.map((row) => {
+          const rowsWithErrors = normalized.map(
+            (row) => {
               const errors = Array.isArray(
                 row.errors,
               )
@@ -1458,7 +2029,8 @@ function BankImport() {
                   ...new Set(errors),
                 ],
               };
-            });
+            },
+          );
 
           const invalidRows =
             rowsWithErrors.filter(
@@ -1510,12 +2082,13 @@ function BankImport() {
           );
 
           setProcessingError(
-            "Pennywise could not safely process this CSV. Please upload another CSV file.",
+            err?.message ||
+              "Pennywise could not safely process this bank statement.",
           );
 
           setProcessingErrors([
             err?.message ||
-              "Unknown CSV processing error.",
+              "Unknown Statement processing error.",
           ]);
 
           setCurrentStep(4);
@@ -1524,17 +2097,18 @@ function BankImport() {
 
       error: (parseError) => {
         console.error(
-          "CSV processing error:",
+          "Statement processing error:",
           parseError,
         );
 
         setProcessingError(
-          "Pennywise could not read this CSV safely. Please upload another CSV file.",
+          parseError?.message ||
+            "Pennywise could not read this statement safely.",
         );
 
         setProcessingErrors([
           parseError?.message ||
-            "CSV parsing failed.",
+            "CSV/PDF parsing failed.",
         ]);
 
         setCurrentStep(4);
@@ -1635,6 +2209,8 @@ function BankImport() {
         csvHeaders,
         csvRows,
         csvRowCount,
+        selectedFileType,
+        pdfParsedData,
         columnMapping,
         normalizedRows,
         selectedFileName: selectedFile?.name || null,
@@ -1959,7 +2535,7 @@ function BankImport() {
     },
     {
       number: 2,
-      label: "Upload CSV",
+      label: "Upload Statement",
     },
     {
       number: 3,
@@ -2010,7 +2586,7 @@ function BankImport() {
         </h1>
 
         <p>
-          Upload your bank transaction CSV
+          Upload your bank transaction CSV or PDF
           and prepare it for Pennywise.
         </p>
       </header>
@@ -2061,14 +2637,14 @@ function BankImport() {
                 </span>
 
                 <h2>
-                  Which bank is this CSV
+                  Which bank is this statement
                   from?
                 </h2>
 
                 <p>
                   Select your bank so
                   Pennywise can automatically
-                  understand its CSV format.
+                  understand its statement format.
                 </p>
               </div>
             </div>
@@ -2121,7 +2697,7 @@ function BankImport() {
 
                 <p>
                   Different banks use
-                  different CSV formats.
+                  different statement formats.
                   Selecting the bank lets
                   Pennywise automatically
                   understand the transaction
@@ -2147,11 +2723,11 @@ function BankImport() {
                 </span>
 
                 <h2>
-                  Upload your CSV
+                  Upload your bank statement
                 </h2>
 
                 <p>
-                  Upload the CSV downloaded
+                  Upload the statement downloaded
                   from{" "}
                   <strong>
                     {
@@ -2168,7 +2744,7 @@ function BankImport() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".csv,text/csv"
+              accept=".csv,.pdf,text/csv,application/pdf"
               onChange={
                 handleInputChange
               }
@@ -2212,7 +2788,7 @@ function BankImport() {
                 </div>
 
                 <h3>
-                  Drop your CSV file
+                  Drop your CSV or PDF file
                   here
                 </h3>
 
@@ -2222,8 +2798,7 @@ function BankImport() {
                 </p>
 
                 <span>
-                  CSV files only ·
-                  Maximum 10 MB
+                  CSV or PDF files · Maximum 10 MB
                 </span>
               </div>
             )}
@@ -2282,12 +2857,12 @@ function BankImport() {
 
               <div>
                 <strong>
-                  Your original CSV stays
+                  Your original bank statement stays
                   unchanged.
                 </strong>
 
                 <p>
-                  Pennywise reads the CSV
+                  Pennywise reads the file
                   locally and prepares the
                   transaction data before
                   anything is added.
@@ -2320,8 +2895,8 @@ function BankImport() {
                   }
                 >
                   {readingCsv
-                    ? "Reading CSV..."
-                    : "Read CSV"}
+                    ? "Reading statement..."
+                    : "Read Statement"}
 
                   {!readingCsv && (
                     <ArrowRight
@@ -2345,7 +2920,7 @@ function BankImport() {
                 </span>
 
                 <h2>
-                  CSV detected
+                  Bank statement detected
                   successfully
                 </h2>
 
@@ -2640,7 +3215,7 @@ function BankImport() {
                 <p>
                   Download the
                   transaction statement
-                  again in CSV format
+                  again in statement format
                   from your bank and
                   upload that file.
                 </p>
@@ -2666,7 +3241,7 @@ function BankImport() {
                   uploadNewFile
                 }
               >
-                Upload Another CSV
+                Upload Another Statement
                 <Upload size={17} />
               </button>
             </div>
@@ -3417,7 +3992,7 @@ function BankImport() {
                   }
                 >
                   <Upload size={17} />
-                  Upload Another CSV
+                  Upload Another Statement
                 </button>
               </div>
             )}
