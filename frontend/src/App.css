@@ -772,6 +772,9 @@
   font-family: inherit;
   font-size: 14px;
 
+  color: #111827;
+  color-scheme: light;
+
   transition:
     border 0.2s ease,
     background 0.2s ease;
@@ -7617,26 +7620,30 @@
    ========================================================= */
 
 :root[data-theme="dark"] {
-  --color-background: #0f1117;
-  --color-surface: #181b24;
+  /* Backgrounds — warm deep navy, not cold black */
+  --color-background: #12131a;
+  --color-surface: #1c1e2a;
 
-  --color-text: #f3f4f6;
-  --color-text-secondary: #9ca3af;
+  /* Text — warm whites, not stark white */
+  --color-text: #edeef5;
+  --color-text-secondary: #8b909e;
 
-  --color-border: #2a2f3a;
+  /* Borders — subtle warm slate */
+  --color-border: #2e3040;
 
-  --color-primary: #8b7cff;
-  --color-primary-dark: #6c63ff;
+  /* Primary — vivid violet that pops on dark */
+  --color-primary: #7c6fff;
+  --color-primary-dark: #6356f5;
 
-  --color-success: #34d399;
-  --color-danger: #f87171;
-  --color-warning: #fbbf24;
+  /* Semantic colours — vivid but not harsh */
+  --color-success: #22d38e;
+  --color-danger: #ff6b6b;
+  --color-warning: #ffb84d;
 
-  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.2);
-
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.28);
-
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.35);
+  /* Elevated shadows */
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.55);
 
   color-scheme: dark;
 }
@@ -7671,24 +7678,25 @@ body {
    ========================================================= */
 
 :root[data-theme="dark"] .sidebar {
-  background: rgba(24, 27, 36, 0.94);
+  background: rgba(28, 30, 42, 0.96);
   border-right-color: var(--color-border);
+  backdrop-filter: blur(24px);
 }
 
 :root[data-theme="dark"] .nav-item:hover {
-  background: rgba(108, 99, 255, 0.12);
+  background: rgba(124, 111, 255, 0.1);
 }
 
 :root[data-theme="dark"] .nav-item.active {
   background: linear-gradient(
     90deg,
-    rgba(108, 99, 255, 0.18),
-    rgba(108, 99, 255, 0.08)
+    rgba(124, 111, 255, 0.2),
+    rgba(124, 111, 255, 0.07)
   );
 }
 
 :root[data-theme="dark"] .logout-button:hover {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(255, 107, 107, 0.12);
 }
 
 /* =========================================================
