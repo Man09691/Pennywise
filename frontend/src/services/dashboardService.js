@@ -3,6 +3,7 @@ const API_URL = "http://localhost:5000/api";
 export async function getDashboardSummary(token) {
     const response = await fetch(`${API_URL}/dashboard/summary`, {
         method: "GET",
+        cache: "no-store",
         headers: {
             Authorization: `Bearer ${token}`,
         },

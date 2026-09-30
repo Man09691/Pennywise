@@ -266,6 +266,25 @@ function Transactions() {
   }, []);
 
   // ==================================================
+  // RELOAD WHEN TRANSACTIONS CHANGE ELSEWHERE
+  // ==================================================
+
+  useEffect(() => {
+    function handleTransactionsUpdated() {
+      loadTransactions(false);
+    }
+
+    window.addEventListener("transactionsUpdated", handleTransactionsUpdated);
+
+    return () => {
+      window.removeEventListener(
+        "transactionsUpdated",
+        handleTransactionsUpdated,
+      );
+    };
+  }, []);
+
+  // ==================================================
   // APPLY URL FILTERS
   // ==================================================
 

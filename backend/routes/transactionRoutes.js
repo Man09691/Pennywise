@@ -745,20 +745,79 @@ router.get(
     protect,
     async (req, res) => {
         try {
+            const {
+                from,
+                to,
+                category,
+                type,
+                limit,
+            } = req.query;
+
+            const query = {
+                user: req.userId,
+                isDeleted: false,
+            };
+
+            // Date range filtering
+            if (from || to) {
+                query.date = {};
+
+                if (from) {
+                    query.date.$gte = new Date(from);
+                }
+
+                if (to) {
+                    query.date.$lte = new Date(to);
+                }
+            }
+
+            // Category filtering
+            if (category) {
+                query.category = category;
+            }
+
+            // Income / expense filtering
+            if (type) {
+                if (!["income", "expense"].includes(type)) {
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Invalid transaction type. Use income or expense.",
+                    });
+                }
+
+                query.type = type;
+            }
+
+            let transactionQuery = Transaction.find(query)
+                .populate("category", "name type")
+                .sort({
+                    date: -1,
+                });
+
+            // Optional result limit
+            if (limit) {
+                const parsedLimit = Number(limit);
+
+                if (
+                    !Number.isInteger(parsedLimit) ||
+                    parsedLimit < 1 ||
+                    parsedLimit > 100
+                ) {
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Limit must be an integer between 1 and 100.",
+                    });
+                }
+
+                transactionQuery = transactionQuery.limit(
+                    parsedLimit
+                );
+            }
 
             const transactions =
-                await Transaction.find({
-                    user: req.userId,
-                    isDeleted: false,
-                })
-                    .populate(
-                        "category",
-                        "name type"
-                    )
-                    .sort({
-                        date: -1,
-                    });
-
+                await transactionQuery;
 
             return res.status(200).json({
                 success: true,
@@ -766,7 +825,6 @@ router.get(
             });
 
         } catch (error) {
-
             return res.status(500).json({
                 success: false,
                 message: error.message,

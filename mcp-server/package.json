@@ -1,0 +1,16 @@
+{
+  "name": "pennywise-mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server for the Pennywise expense tracker",
+  "scripts": {
+    "start": "node src/index.js",
+    "inspect": "npx @modelcontextprotocol/inspector node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.2.0",
+    "dotenv": "^17.4.2",
+    "zod": "^4.1.12"
+  }
+}

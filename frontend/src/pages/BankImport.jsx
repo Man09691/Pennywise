@@ -2484,6 +2484,9 @@ function BankImport() {
           response?.message ||
           "Transactions imported successfully.",
       });
+
+      // Notify Dashboard and Transactions to refresh their data immediately.
+      window.dispatchEvent(new Event("transactionsUpdated"));
     } catch (err) {
       console.error(
         "Transaction import error:",
