@@ -7,6 +7,8 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import budgetRoutes from "./routes/budgetRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import assistantRoutes from "./routes/assistantRoutes.js";
+
 
 dotenv.config();
 
@@ -23,6 +25,8 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/budgets", budgetRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+
+app.use("/api/assistant", assistantRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
