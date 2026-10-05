@@ -24,7 +24,7 @@ import {
 } from "./intentRouter.js";
 
 
-export async function runAgent(userMessage) {
+export async function runAgent(userMessage, { userId, token } = {}) {
 
     console.log("\nInitializing Pennywise AI agent...");
 
@@ -521,12 +521,14 @@ After all required tools have returned:
                  * Execute the validated MCP tool.
                  * --------------------------------------------------
                  */
-                result =
-                    await callMcpTool(
-                        toolName,
-                        arguments_
-                    );
-
+                result = await callMcpTool(
+                    toolName,
+                    arguments_,
+                    {
+                        userId,
+                        token,
+                    }
+                );
                 /*
                  * Store the result so an identical future
                  * request does not call MCP again.

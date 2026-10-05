@@ -15,10 +15,10 @@ export async function connectMcp() {
     }
 
     transport = new StdioClientTransport({
-    command: "node",
-    args: [MCP_SERVER_PATH],
-    cwd: "Q:\\Pennywise\\mcp-server",
-});
+        command: "node",
+        args: [MCP_SERVER_PATH],
+        cwd: "Q:\\Pennywise\\mcp-server",
+    });
 
     client = new Client({
         name: "pennywise-backend",
@@ -46,11 +46,19 @@ export async function listMcpTools() {
 /**
  * Call one MCP tool.
  */
-export async function callMcpTool(name, arguments_ = {}) {
+export async function callMcpTool(
+    name,
+    arguments_ = {},
+    context = {}
+) {
     const mcp = await connectMcp();
 
     return await mcp.callTool({
         name,
         arguments: arguments_,
+        _meta: {
+            userId: context.userId,
+            token: context.token,
+        },
     });
 }

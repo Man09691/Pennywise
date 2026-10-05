@@ -1,7 +1,7 @@
 import { runAgent } from "../services/ai/agent.js";
 
 const result = await runAgent(
-    "what is the capital of the india?"
+    "What is my total income, total expenses, balance, and expenses by category for October 2026?"
 );
 
 console.log("\n==============================");

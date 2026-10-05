@@ -1,9 +1,10 @@
 import express from "express";
-import { generateText } from "../services/llm/ollamaProvider.js";
+import { runAgent } from "../services/ai/agent.js";
+import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", protect, async (req, res) => {
     try {
         const { message } = req.body;
 
@@ -14,22 +15,15 @@ router.post("/", async (req, res) => {
             });
         }
 
-        const prompt = `
-You are the Pennywise personal finance assistant.
-
-Answer the user's question clearly and simply.
-Do not invent transaction data, balances, budgets, or financial facts.
-If you do not have the required data, say that you need to access the user's Pennywise data.
-
-User question:
-${message.trim()}
-        `;
-
-        const answer = await generateText(prompt);
+        const result = await runAgent(message.trim(), {
+            userId: req.userId,
+            token: req.headers.authorization,
+        });
 
         return res.json({
             success: true,
-            answer,
+            answer: result.answer,
+            toolsUsed: result.toolsUsed,
         });
     } catch (error) {
         console.error("Assistant error:", error);

@@ -1,17 +1,14 @@
 import "dotenv/config";
 
+
 const API_URL = (process.env.PENNYWISE_API_URL || "http://localhost:5000").replace(/\/$/, "");
-const JWT = process.env.PENNYWISE_JWT;
 
-if (!JWT) {
-    throw new Error("PENNYWISE_JWT is missing in mcp-server/.env");
-}
 
-async function request(path, options = {}) {
+async function request(path, token, options = {}) {
     const response = await fetch(`${API_URL}${path}`, {
         ...options,
         headers: {
-            Authorization: `Bearer ${JWT}`,
+            Authorization: token,
             ...(options.headers || {}),
         },
     });
@@ -52,13 +49,13 @@ function parseMonth(month) {
     return { year, month: monthNumber };
 }
 
-export async function getTransactions({ from, to, category, type, limit }) {
+export async function getTransactions({ from, to, category, type, limit }, token) {
     let categoryId = category;
 
     // The Express transaction endpoint filters category by ID.
     // Allow the MCP tool to accept a friendly category name too.
     if (category && !/^[a-f\d]{24}$/i.test(category)) {
-        const categoryData = await request("/api/categories");
+        const categoryData = await request("/api/categories", token);
         const found = (categoryData.categories || []).find(
             (item) => item.name?.toLowerCase() === category.toLowerCase()
         );
@@ -81,43 +78,46 @@ export async function getTransactions({ from, to, category, type, limit }) {
             category: categoryId,
             type,
             limit,
-        })}`
+        })}`,
+        token
     );
 }
 
-export async function getMonthlySummary(month) {
+export async function getMonthlySummary(month, token) {
     const { year, month: monthNumber } = parseMonth(month);
 
     return request(
         `/api/dashboard/monthly${queryString({
             month: monthNumber,
             year,
-        })}`
+        })}`,
+        token
     );
 }
 
-export async function getSpendingByCategory(month) {
+export async function getSpendingByCategory(month,token) {
     const { year, month: monthNumber } = parseMonth(month);
 
     return request(
         `/api/dashboard/categories${queryString({
             month: monthNumber,
             year,
-        })}`
+        })}`,token
     );
 }
 
-export async function getCategories() {
-    return request("/api/categories");
+export async function getCategories(token) {
+    return request("/api/categories", token);
 }
 
-export async function getBudgetStatus(month) {
+export async function getBudgetStatus(month, token) {
     const { year, month: monthNumber } = parseMonth(month);
 
     return request(
         `/api/budgets/summary${queryString({
             month: monthNumber,
             year,
-        })}`
+        })}`,
+        token
     );
 }

@@ -47,9 +47,14 @@ export function registerTools(server) {
                 limit: z.number().int().min(1).max(100).optional(),
             }),
         },
-        async (args) => {
+        async (args, ctx) => {
             try {
-                return result(await getTransactions(args));
+                return result(
+                    await getTransactions(
+                        args,
+                        ctx.mcpReq._meta?.token
+                    )
+                );
             } catch (error) {
                 return errorResult(error);
             }
@@ -65,9 +70,9 @@ export function registerTools(server) {
                 month: z.string().describe("Month in YYYY-MM format, for example 2026-09"),
             }),
         },
-        async ({ month }) => {
+        async ({ month }, ctx) => {
             try {
-                return result(await getMonthlySummary(month));
+                return result(await getMonthlySummary(month, ctx.mcpReq._meta?.token));
             } catch (error) {
                 return errorResult(error);
             }
@@ -83,9 +88,9 @@ export function registerTools(server) {
                 month: z.string().describe("Month in YYYY-MM format, for example 2026-09"),
             }),
         },
-        async ({ month }) => {
+        async ({ month }, ctx) => {
             try {
-                return result(await getSpendingByCategory(month));
+                return result(await getSpendingByCategory(month, ctx.mcpReq._meta?.token));
             } catch (error) {
                 return errorResult(error);
             }
@@ -99,9 +104,9 @@ export function registerTools(server) {
                 "Get the logged-in user's available Pennywise categories, including default categories.",
             inputSchema: z.object({}),
         },
-        async () => {
+        async (_args, ctx) => {
             try {
-                return result(await getCategories());
+                return result(await getCategories(ctx.mcpReq._meta?.token));
             } catch (error) {
                 return errorResult(error);
             }
@@ -117,9 +122,9 @@ export function registerTools(server) {
                 month: z.string().describe("Month in YYYY-MM format, for example 2026-09"),
             }),
         },
-        async ({ month }) => {
+        async ({ month }, ctx) => {
             try {
-                return result(await getBudgetStatus(month));
+                return result(await getBudgetStatus(month, ctx.mcpReq._meta?.token));
             } catch (error) {
                 return errorResult(error);
             }

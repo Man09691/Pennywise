@@ -13,6 +13,8 @@ import Sidebar from "./components/layout/Sidebar";
 import PublicRoute from "./components/PublicRoute";
 import { ThemeProvider } from "./context/ThemeContext";
 
+import Assistant from "./components/assistant/Assistant";
+
 function AppLayout({ children }) {
   return (
     <div className="app-layout">
@@ -20,6 +22,8 @@ function AppLayout({ children }) {
 
       <main className="main-content">
         <div className="page-content">{children}</div>
+
+<Assistant />
       </main>
     </div>
   );
