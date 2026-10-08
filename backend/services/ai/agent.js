@@ -24,11 +24,14 @@ import {
 } from "./intentRouter.js";
 
 
-export async function runAgent(userMessage, { userId, token } = {}) {
+export async function runAgent(
+    message,
+    { userId, token, history = [] } = {}
+) {
 
     console.log("\nInitializing Pennywise AI agent...");
 
-    const intentResult = await decideIntent(userMessage);
+    const intentResult = await decideIntent(message);
 
     console.log(
         `Intent Router: ${intentResult.intent}${intentResult.fallback ? " (fallback)" : ""
@@ -138,10 +141,11 @@ After all required tools have returned:
 - If the available tools do not provide a requested breakdown, clearly say that the breakdown is not available.
             `,
         },
+        ...history,
 
         {
             role: "user",
-            content: userMessage,
+            content: message,
         },
 
     ];
@@ -256,7 +260,7 @@ After all required tools have returned:
             const userWantsCategoryBreakdown =
                 isPennywise &&
                 categoryKeywords.some((kw) =>
-                    userMessage.toLowerCase().includes(kw)
+                    message.toLowerCase().includes(kw)
                 );
 
             const categoryToolExecuted =
